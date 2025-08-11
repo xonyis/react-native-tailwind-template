@@ -10,7 +10,7 @@ if [ $# -eq 0 ]; then
 fi
 
 NEW_NAME=$1
-OLD_NAME="mon-app"
+OLD_NAME="react-native-tailwind-template"
 NEW_DIR_NAME=$(echo $NEW_NAME | sed 's/[^a-zA-Z0-9]/-/g')
 
 echo "Renommage du projet de '$OLD_NAME' vers '$NEW_NAME'..."
