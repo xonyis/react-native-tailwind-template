@@ -13,7 +13,7 @@ export default function LoginScreen() {
 
   React.useEffect(() => {
     if (token) {
-      router.replace("/(tabs)");
+      router.replace("/(drawer)");
     }
   }, [token, router]);
 
