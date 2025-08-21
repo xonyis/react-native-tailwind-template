@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "mon-nouveau-projet",
-    "slug": "mon-nouveau-projet",
+    "name": "GestInfo-mobile",
+    "slug": "GestInfo-mobile",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
@@ -33,7 +33,8 @@
           "resizeMode": "contain",
           "backgroundColor": "#ffffff"
         }
-      ]
+      ],
+      "expo-secure-store"
     ],
     "experiments": {
       "typedRoutes": true

@@ -1,11 +1,8 @@
 // components/ThemedView.tsx
-import { View } from "react-native";
-import { useColorScheme } from "react-native";
+import { useColorScheme, View } from "react-native";
 
 export function ThemedView({
   className = "",
-  lightColor,
-  darkColor,
   ...props
 }) {
   const colorScheme = useColorScheme();
