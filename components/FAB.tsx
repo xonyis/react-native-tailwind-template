@@ -19,7 +19,7 @@ export function FAB({ onPress }: Props) {
 const styles = StyleSheet.create({
   container: {
     position: 'absolute',
-    bottom: 24,
+    bottom: 48,
     right: 24,
   },
   button: {

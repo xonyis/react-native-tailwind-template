@@ -1,59 +1,48 @@
-import { Collapsible } from "@/components/Collapsible";
+import { BodyText, Caption, Heading1, Heading3 } from "@/components/CustomText";
 import { FAB } from "@/components/FAB";
-import { HelloWave } from "@/components/HelloWave";
-import { LogoutButton } from "@/components/LogoutButton";
-import ParallaxScrollView from "@/components/ParallaxScrollView";
-import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { DrawerActions, useNavigation } from "@react-navigation/native";
-import { View } from "react-native";
+import { ScrollView, View } from "react-native";
 
 export default function HomeScreen() {
   const navigation = useNavigation();
   return (
-    <View style={{ flex: 1 }}>
-      <ParallaxScrollView
-        headerBackgroundColor={{ light: "#A1CEDC", dark: "#1D3D47" }}
-        headerImage={
-          <ThemedView
-            className="flex-1 items-center justify-center"
-            lightColor="#ffffff"
-            darkColor="#000000"
-          >
-            <ThemedText className="text-3xl font-bold">Mon App</ThemedText>
-            <HelloWave />
-          </ThemedView>
-        }
-      >
-        <ThemedView
-          className="p-4 gap-4"
-          lightColor="#ffffff"
-          darkColor="#000000"
-        >
-          <View className="items-end">
-            <LogoutButton />
+    <View style={{ flex: 1, backgroundColor: "#fff"}}>
+      <ScrollView style={{ flex: 1 }} contentInsetAdjustmentBehavior="automatic">
+        <ThemedView className="p-6 gap-4" lightColor="#ffffff" darkColor="#000000">
+          <Heading1 style={{ color: "#4C4D5C", textAlign: "center", marginTop: 40, marginBottom: 10 }}>
+            Dashboard
+          </Heading1>
+                    
+          <BodyText style={{ color: "#666" }}>
+            Voici votre tableau de bord principal avec toutes les informations importantes.
+          </BodyText>
+
+          <View className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg">
+            <Heading3 style={{ color: "#1e40af", marginBottom: 8 }}>
+              Statistiques du jour
+            </Heading3>
+            <BodyText style={{ color: "#1e40af" }}>
+              Consultez vos métriques en temps réel
+            </BodyText>
+            <Caption style={{ color: "#64748b", marginTop: 4 }}>
+              Dernière mise à jour : il y a 5 minutes
+            </Caption>
           </View>
-          <ThemedText className="text-2xl text-black font-bold">
-            Bienvenue !
-          </ThemedText>
 
-          <Collapsible title="Fonctionnalités">
-            <ThemedText className="text-black dark:text-gray-300">
-              Voici les fonctionnalités de l&apos;app...
-            </ThemedText>
-          </Collapsible>
-
-          <ThemedView
-            className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg"
-            lightColor="#ffffff"
-            darkColor="#000000"
-          >
-            <ThemedText className="text-blue-800 dark:text-blue-200">
-              Section mise en évidence
-            </ThemedText>
-          </ThemedView>
+          <View className="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg">
+            <Heading3 style={{ color: "#065f46", marginBottom: 8 }}>
+              Actions rapides
+            </Heading3>
+            <BodyText style={{ color: "#065f46" }}>
+              Accédez rapidement à vos tâches principales
+            </BodyText>
+          </View>
+          
+          {/* Espace en bas pour éviter que le FAB cache le contenu */}
+          <View style={{ height: 80 }} />
         </ThemedView>
-      </ParallaxScrollView>
+      </ScrollView>
       <FAB onPress={() => navigation.dispatch(DrawerActions.openDrawer())} />
     </View>
   );
