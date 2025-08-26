@@ -16,6 +16,7 @@ export interface Client {
   latitude: number | null;
   longitude: number | null;
   referenceClient: string | null;
+  visiteAnnuelle: string | null;
 }
 
 async function makeAuthenticatedRequest(
@@ -41,7 +42,13 @@ async function makeAuthenticatedRequest(
       throw new Error("Session expirée. Veuillez vous reconnecter.");
     }
     const errorData = await response.json().catch(() => ({}));
-    throw new Error(errorData.error || `Erreur HTTP: ${response.status}`);
+    console.error('Erreur API détaillée:', {
+      status: response.status,
+      statusText: response.statusText,
+      errorData: errorData,
+      url: response.url
+    });
+    throw new Error(errorData.error || errorData.message || `Erreur HTTP: ${response.status}`);
   }
 
   return response;

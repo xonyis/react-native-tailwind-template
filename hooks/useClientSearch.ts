@@ -38,7 +38,8 @@ export function useClientSearch(clients: Client[]) {
         safeIncludes(client.numeroTel2, query) ||
         safeIncludes(client.siret, query) ||
         safeIncludes(client.typeClient, query) ||
-        safeIncludes(client.referenceClient, query)
+        safeIncludes(client.referenceClient, query) ||
+        safeIncludes(client.visiteAnnuelle, query)
       );
     });
   }, [clients, searchQuery]);

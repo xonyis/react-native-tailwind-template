@@ -20,6 +20,7 @@ const cleanClientData = (client: any): Client => {
     latitude: client.latitude || null,
     longitude: client.longitude || null,
     referenceClient: client.referenceClient || null,
+    visiteAnnuelle: client.visiteAnnuelle || null,
   };
 };
 

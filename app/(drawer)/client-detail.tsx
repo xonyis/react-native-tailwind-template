@@ -5,8 +5,8 @@ import { useAuth } from "@/context/AuthContext";
 import { Client, clientsApi } from "@/services/ClientsApi";
 import { DrawerActions, useNavigation } from "@react-navigation/native";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { ArrowLeft, Edit, Mail, MapPin, Phone, Trash, User } from "lucide-react-native";
-import React, { useEffect, useState } from "react";
+import { ArrowLeft, Building, Calendar1, Edit, Mail, MapPin, Phone, Trash, User } from "lucide-react-native";
+import React, { useCallback, useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -26,34 +26,42 @@ export default function ClientDetailScreen() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    const fetchClientDetail = async () => {
-      if (!id || !token) {
-        setError("ID client ou token manquant");
-        setLoading(false);
-        return;
-      }
+  const fetchClientDetail = useCallback(async () => {
+    if (!id || !token) {
+      setError("ID client ou token manquant");
+      setLoading(false);
+      return;
+    }
 
-      try {
-        setLoading(true);
-        setError(null);
-        const clientData = await clientsApi.getClientById(parseInt(id), token);
-        console.log("Données client reçues:", clientData);
-        setClient(clientData);
-      } catch (err) {
-        const message = err instanceof Error ? err.message : "Erreur lors du chargement";
-        setError(message);
-        Alert.alert("Erreur", message);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchClientDetail();
+    try {
+      setLoading(true);
+      setError(null);
+      const clientData = await clientsApi.getClientById(parseInt(id), token);
+      setClient(clientData);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Erreur lors du chargement";
+      setError(message);
+      Alert.alert("Erreur", message);
+    } finally {
+      setLoading(false);
+    }
   }, [id, token]);
 
+  useEffect(() => {
+    fetchClientDetail();
+  }, [fetchClientDetail]);
+
+  // Rafraîchir les données quand on revient sur cet écran
+  useEffect(() => {
+    const unsubscribe = navigation.addListener('focus', () => {
+      fetchClientDetail();
+    });
+
+    return unsubscribe;
+  }, [navigation, fetchClientDetail]);
+
   const handleGoBack = () => {
-    router.back();
+    router.push("/clients");
   };
 
   const handleEdit = () => {
@@ -151,17 +159,18 @@ export default function ClientDetailScreen() {
         {/* Nom du client */}
         <View style={styles.clientHeader}>
           <Heading1 style={styles.clientName}>{client.nom}</Heading1>
-          {/* Debug: Afficher toujours pour voir la valeur */}
-          <View style={styles.clientTypeBadge}>
-            <Caption style={styles.clientTypeText}>
-              Ref: {client.referenceClient || "Aucune référence"}
-            </Caption>
+          <View className="gap-2 flex-row">
+            {client.referenceClient && (
+              <View style={styles.clientTypeBadge}>
+                <Caption style={styles.clientTypeText}>{client.referenceClient}</Caption>
+              </View>
+            )}
+            {client.typeClient && (
+              <View style={styles.clientTypeBadge}>
+                <Caption style={styles.clientTypeText}>{client.typeClient}</Caption>
+              </View>
+            )}
           </View>
-          {client.typeClient && (
-            <View style={styles.clientTypeBadge}>
-              <Caption style={styles.clientTypeText}>{client.typeClient}</Caption>
-            </View>
-          )}
         </View>
 
         {/* Informations de contact */}
@@ -222,7 +231,7 @@ export default function ClientDetailScreen() {
         </View>
 
         {/* Informations entreprise */}
-        {(client.raisonSocial || client.siret) && (
+        {(client.raisonSocial || client.siret || client.visiteAnnuelle) && (
           <View style={styles.section}>
             <Heading3 style={styles.sectionTitle}>Entreprise</Heading3>
             
@@ -236,15 +245,25 @@ export default function ClientDetailScreen() {
               </View>
             )}
 
-            {client.siret && (
-              <View style={styles.infoRow}>
-                <User size={20} color="#6b7280" />
-                <View style={styles.infoContent}>
-                  <Caption style={styles.infoLabel}>SIRET</Caption>
-                  <BodyText style={styles.infoValue}>{client.siret}</BodyText>
-                </View>
-              </View>
-            )}
+                         {client.siret && (
+                <View style={styles.infoRow}>
+                 <Building size={20} color="#6b7280" />
+                 <View style={styles.infoContent}>
+                   <Caption style={styles.infoLabel}>SIRET</Caption>
+                   <BodyText style={styles.infoValue}>{client.siret}</BodyText>
+                 </View>
+               </View>
+             )}
+
+             {client.visiteAnnuelle && (
+                <View style={styles.infoRow}>
+                 <Calendar1 size={20} color="#6b7280" />
+                 <View style={styles.infoContent}>
+                   <Caption style={styles.infoLabel}>Visite annuelle</Caption>
+                   <BodyText style={styles.infoValue}>{client.visiteAnnuelle}</BodyText>
+                 </View>
+               </View>
+             )}
           </View>
         )}
 
@@ -333,6 +352,7 @@ const styles = StyleSheet.create({
   clientTypeText: {
     color: "#1e40af",
     fontWeight: "600",
+    textAlign: "center",
   },
   section: {
     padding: 20,
