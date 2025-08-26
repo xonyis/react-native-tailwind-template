@@ -516,7 +516,7 @@ export default function ClientEditScreen() {
       {/* Modal pour le sélecteur de date */}
       {Platform.OS === 'ios' ? (
         <Modal
-          animationType="slide"
+          animationType="fade"
           transparent={true}
           visible={showDatePicker}
           onRequestClose={() => setShowDatePicker(false)}
@@ -539,19 +539,16 @@ export default function ClientEditScreen() {
                 </Pressable>
               </View>
               <View style={{ padding: 20, alignItems: 'center', backgroundColor: 'white' }}>
-                <DateTimePicker
-                  value={tempSelectedDate}
-                  mode="date"
-                  display="spinner"
-                  onChange={handleDateChange}
-                  maximumDate={new Date(2100, 11, 31)}
-                  minimumDate={new Date(1900, 0, 1)}
-                  style={{ 
-                    backgroundColor: 'white',
-                    width: '100%',
-                    height: 250,
-                  }}
-                />
+              <DateTimePicker
+                value={tempSelectedDate}
+                mode="date"
+                display="spinner"           // spinner conservé
+                onChange={handleDateChange}
+                maximumDate={new Date(2100, 11, 31)}
+                minimumDate={new Date(1900, 0, 1)}
+                themeVariant="light"        // optionnel, aide avec les contrastes
+                textColor="#000"  
+              />
               </View>
             </View>
           </View>
@@ -565,7 +562,6 @@ export default function ClientEditScreen() {
             onChange={handleDateChange}
             maximumDate={new Date(2100, 11, 31)}
             minimumDate={new Date(1900, 0, 1)}
-            style={{ backgroundColor: 'white' }}
           />
         )
       )}
