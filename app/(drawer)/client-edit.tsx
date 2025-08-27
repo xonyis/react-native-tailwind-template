@@ -317,13 +317,9 @@ export default function ClientEditScreen() {
           <ArrowLeft size={24} color="#374151" />
         </Pressable>
         <Heading2 style={styles.headerTitle}>Modifier Client</Heading2>
-        <Pressable 
-          onPress={handleSave} 
-          style={[styles.saveButton, saving && styles.saveButtonDisabled]}
-          disabled={saving}
-        >
+        <Pressable onPress={handleSave} style={styles.saveButton} disabled={saving}>
           {saving ? (
-            <ActivityIndicator size={20} color="#fff" />
+            <ActivityIndicator size="small" color="#fff" />
           ) : (
             <Save size={20} color="#fff" />
           )}
@@ -537,7 +533,7 @@ export default function ClientEditScreen() {
                 >
                   <BodyText style={styles.modalButton}>Terminé</BodyText>
                 </Pressable>
-              </View>
+              </View> 
               <View style={{ padding: 20, alignItems: 'center', backgroundColor: 'white' }}>
               <DateTimePicker
                 value={tempSelectedDate}
@@ -647,11 +643,11 @@ const styles = StyleSheet.create({
   },
   saveButton: {
     backgroundColor: "#2563eb",
-    paddingHorizontal: 16,
-    paddingVertical: 8,
+    padding: 8,
     borderRadius: 8,
-    flexDirection: "row",
-    alignItems: "center",
+    minWidth: 40,
+    marginRight: 5,
+    alignItems: 'center',
   },
   saveButtonDisabled: {
     backgroundColor: "#9ca3af",
