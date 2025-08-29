@@ -1,4 +1,4 @@
-import { API_BASE_URL } from "@/constants/Config";
+import { makeAuthenticatedRequest } from './authApi';
 
 export interface Client {
   id: number;
@@ -19,52 +19,19 @@ export interface Client {
   visiteAnnuelle: string | null;
 }
 
-async function makeAuthenticatedRequest(
-  endpoint: string, 
-  token: string, 
-  options: RequestInit = {}
-): Promise<Response> {
-  if (!token) {
-    throw new Error("Token d'authentification non trouvé");
-  }
 
-  const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-    ...options,
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`,
-      ...options.headers,
-    },
-  });
-
-  if (!response.ok) {
-    if (response.status === 401) {
-      throw new Error("Session expirée. Veuillez vous reconnecter.");
-    }
-    const errorData = await response.json().catch(() => ({}));
-    console.error('Erreur API détaillée:', {
-      status: response.status,
-      statusText: response.statusText,
-      errorData: errorData,
-      url: response.url
-    });
-    throw new Error(errorData.error || errorData.message || `Erreur HTTP: ${response.status}`);
-  }
-
-  return response;
-}
 
 export const clientsApi = {
   // Récupérer tous les clients
   async getAllClients(token: string): Promise<Client[]> {
     const response = await makeAuthenticatedRequest('/api/clients', token);
-    return await response.json();
+    return response;
   },
 
   // Récupérer un client par ID
   async getClientById(id: number, token: string): Promise<Client> {
     const response = await makeAuthenticatedRequest(`/api/clients/${id}`, token);
-    return await response.json();
+    return response;
   },
 
   // Créer un nouveau client
@@ -73,7 +40,7 @@ export const clientsApi = {
       method: 'POST',
       body: JSON.stringify(clientData),
     });
-    return await response.json();
+    return response;
   },
 
   // Mettre à jour un client
@@ -82,7 +49,7 @@ export const clientsApi = {
       method: 'PUT',
       body: JSON.stringify(clientData),
     });
-    return await response.json();
+    return response;
   },
 
   // Supprimer un client

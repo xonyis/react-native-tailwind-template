@@ -185,7 +185,7 @@ export const ContratList: React.FC<ContratListProps> = ({
   onContratPress,
   onContratEdit,
   variant = 'card',
-  showActions = false,
+  showActions = false, 
   emptyMessage = 'Aucun contrat trouvé',
   containerStyle,
   cardStyle,

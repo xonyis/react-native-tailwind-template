@@ -5,7 +5,7 @@ import { useContratDetail } from '@/hooks/useContratDetail';
 import { contratsApi } from '@/services/contratsApi';
 import { DrawerActions, useNavigation } from '@react-navigation/native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { ArrowLeft, CalendarClock, Edit, FileText, Mail, MapPin, Phone, Signature, Trash, User } from 'lucide-react-native';
+import { ArrowLeft, CalendarClock, Edit, FileText, Mail, MapPin, Phone, Signature, Trash } from 'lucide-react-native';
 import React from 'react';
 import { ActivityIndicator, Alert, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
@@ -246,11 +246,6 @@ export default function ContratDetailPage() {
                   <BodyText style={styles.infoValue}>{contrat.client.telephone}</BodyText>
                 </View>
               </View>
-            </View>
-
-            {/* Adresse */}
-            <View style={styles.section}>
-              <Heading3 style={styles.sectionTitle}>Adresse</Heading3>
               <View style={styles.infoRow}>
                 <MapPin size={20} color="#6b7280" />
                 <View style={styles.infoContent}>
@@ -266,7 +261,7 @@ export default function ContratDetailPage() {
             </View>
 
             {/* Informations supplémentaires */}
-            {contrat.client.referenceClient && (
+            {/* {contrat.client.referenceClient && (
               <View style={styles.section}>
                 <Heading3 style={styles.sectionTitle}>Informations supplémentaires</Heading3>
                 
@@ -278,7 +273,7 @@ export default function ContratDetailPage() {
                   </View>
                 </View>
               </View>
-            )}
+            )} */}
           </>
         )}
 
