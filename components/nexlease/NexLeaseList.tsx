@@ -135,7 +135,6 @@ const styles = StyleSheet.create({
     marginLeft: 8,
     color: '#1f2937',
   },
-
   duree: {
     color: '#6b7280',
     fontSize: 14,
