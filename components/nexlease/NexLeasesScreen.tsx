@@ -1,37 +1,37 @@
 import { SearchBar } from '@/components/clients/SearchBar';
-import { MaterielList } from '@/components/materiels/MaterielList';
-import { useMaterielSearch } from '@/hooks/useMaterielSearch';
-import { useMateriels } from '@/hooks/useMateriels';
-import { type Materiel } from '@/services/materielsApi';
+import { NexLeaseList } from '@/components/nexlease/NexLeaseList';
+import { useNexLeaseSearch } from '@/hooks/useNexLeaseSearch';
+import { useNexLeases } from '@/hooks/useNexLeases';
+import { type NexLease } from '@/services/nexleaseApi';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import { ActivityIndicator, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
 
-export function MaterielsScreen() {
+export function NexLeasesScreen() {
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState('');
-  const { materiels, loading, error, fetchMateriels } = useMateriels();
-  const filteredMateriels = useMaterielSearch(materiels, searchQuery);
+  const { nexleases, loading, error, fetchNexLeases } = useNexLeases();
+  const filteredNexLeases = useNexLeaseSearch(nexleases, searchQuery);
 
-  const handleMaterielPress = (materiel: Materiel) => {
+  const handleNexLeasePress = (nexlease: NexLease) => {
     router.push({
-      pathname: '/(drawer)/materiel-detail',
-      params: { id: materiel.id.toString() }
+      pathname: '/(drawer)/nexlease-detail',
+      params: { id: nexlease.id.toString() }
     });
   };
 
-  const handleMaterielEdit = (materiel: Materiel) => {
+  const handleNexLeaseEdit = (nexlease: NexLease) => {
     router.push({
-      pathname: '/(drawer)/materiel-edit',
-      params: { id: materiel.id.toString() }
+      pathname: '/(drawer)/nexlease-edit',
+      params: { id: nexlease.id.toString() }
     });
   };
 
   const handleRefresh = () => {
-    fetchMateriels();
+    fetchNexLeases();
   };
 
-  if (loading && materiels.length === 0) {
+  if (loading && nexleases.length === 0) {
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color="#2563eb" />
@@ -45,7 +45,7 @@ export function MaterielsScreen() {
         value={searchQuery}
         onChangeText={setSearchQuery}
         onClear={() => setSearchQuery('')}
-        placeholder="Rechercher un matériel..."
+        placeholder="Rechercher un NexLease..."
       />
       
       <ScrollView
@@ -65,17 +65,17 @@ export function MaterielsScreen() {
           </View>
         )}
         
-        {filteredMateriels.length === 0 ? (
+        {filteredNexLeases.length === 0 ? (
           <View style={styles.emptyContainer}>
             <Text style={styles.emptyText}>
-              {searchQuery ? 'Aucun matériel trouvé' : 'Aucun matériel disponible'}
+              {searchQuery ? 'Aucun NexLease trouvé' : 'Aucun NexLease disponible'}
             </Text>
           </View>
         ) : (
-          <MaterielList
-            materiels={filteredMateriels}
-            onMaterielPress={handleMaterielPress}
-            onMaterielEdit={handleMaterielEdit}
+          <NexLeaseList
+            nexleases={filteredNexLeases}
+            onNexLeasePress={handleNexLeasePress}
+            onNexLeaseEdit={handleNexLeaseEdit}
             variant="detailed"
           />
         )}

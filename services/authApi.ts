@@ -111,6 +111,11 @@ export async function makeAuthenticatedRequest(
     throw new Error(errorMessage);
   }
 
+  // Pour les réponses 204 (No Content), il n'y a pas de contenu à parser
+  if (response.status === 204) {
+    return { message: 'Opération réussie' };
+  }
+
   try {
     return await response.json();
   } catch (e) {

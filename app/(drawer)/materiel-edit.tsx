@@ -149,7 +149,7 @@ export default function MaterielEditScreen() {
       };
 
       console.log('Données envoyées à l\'API:', updateData);
-      
+
       await materielsApi.updateMateriel(materiel.id, updateData, token);
       
       Alert.alert(
@@ -181,8 +181,8 @@ export default function MaterielEditScreen() {
         setTempSelectedAchatDate(selectedDate);
       } else {
         setSelectedAchatDate(selectedDate);
-        setFormData(prev => ({
-          ...prev,
+      setFormData(prev => ({
+        ...prev,
           date_achat: selectedDate.toISOString().split('T')[0]
         }));
       }
@@ -240,7 +240,7 @@ export default function MaterielEditScreen() {
             <Save size={20} color="#fff" />
           )}
         </Pressable>
-      </View>
+            </View>
 
       <KeyboardAvoidingView 
         style={styles.keyboardAvoidingView}
@@ -252,37 +252,37 @@ export default function MaterielEditScreen() {
             <Heading2 style={styles.sectionTitle}>Informations du matériel</Heading2>
             
             {/* Nom */}
-            <View style={styles.inputGroup}>
+        <View style={styles.inputGroup}>
               <Caption style={styles.label}>Nom *</Caption>
               <View style={styles.inputContainer}>
                 <Package size={20} color="#6b7280" />
-                <TextInput
-                  style={styles.textInput}
-                  value={formData.nom}
-                  onChangeText={(text) => setFormData(prev => ({ ...prev, nom: text }))}
+          <TextInput
+            style={styles.textInput}
+            value={formData.nom}
+            onChangeText={(text) => setFormData(prev => ({ ...prev, nom: text }))}
                   placeholder="Saisir le nom"
-                  placeholderTextColor="#9ca3af"
-                />
+            placeholderTextColor="#9ca3af"
+          />
               </View>
-            </View>
+        </View>
 
-            {/* Référence */}
-            <View style={styles.inputGroup}>
+        {/* Référence */}
+        <View style={styles.inputGroup}>
               <Caption style={styles.label}>Référence *</Caption>
               <View style={styles.inputContainer}>
                 <Package size={20} color="#6b7280" />
-                <TextInput
-                  style={styles.textInput}
-                  value={formData.reference}
-                  onChangeText={(text) => setFormData(prev => ({ ...prev, reference: text }))}
+          <TextInput
+            style={styles.textInput}
+            value={formData.reference}
+            onChangeText={(text) => setFormData(prev => ({ ...prev, reference: text }))}
                   placeholder="Saisir la référence"
-                  placeholderTextColor="#9ca3af"
-                />
+            placeholderTextColor="#9ca3af"
+          />
               </View>
-            </View>
+        </View>
 
             {/* Type de matériel */}
-            <View style={styles.inputGroup}>
+        <View style={styles.inputGroup}>
               <Caption style={styles.label}>Type de matériel *</Caption>
               <View style={styles.pickerContainer}>
                 <Pressable
@@ -303,10 +303,10 @@ export default function MaterielEditScreen() {
                   </BodyText>
                 </Pressable>
               </View>
-            </View>
+        </View>
 
             {/* État */}
-            <View style={styles.inputGroup}>
+        <View style={styles.inputGroup}>
               <Caption style={styles.label}>État</Caption>
               <View style={styles.pickerContainer}>
                 <Pressable
@@ -338,24 +338,24 @@ export default function MaterielEditScreen() {
                   </BodyText>
                 </Pressable>
               </View>
-            </View>
+        </View>
 
-            {/* Date d'achat */}
-            <View style={styles.inputGroup}>
+        {/* Date d'achat */}
+        <View style={styles.inputGroup}>
               <Caption style={styles.label}>Date d'achat</Caption>
-              <Pressable
-                style={styles.dateButton}
+          <Pressable
+            style={styles.dateButton}
                 onPress={() => {
                   setTempSelectedAchatDate(selectedAchatDate);
                   setShowAchatDatePicker(true);
                 }}
-              >
-                <Calendar size={20} color="#6b7280" />
+          >
+            <Calendar size={20} color="#6b7280" />
                 <BodyText style={styles.dateText}>
                   {formData.date_achat ? formatDateForDisplay(formData.date_achat) : 'Sélectionner une date'}
-                </BodyText>
-              </Pressable>
-            </View>
+            </BodyText>
+          </Pressable>
+        </View>
 
             {/* Quantité totale */}
             <View style={styles.inputGroup}>
@@ -388,7 +388,7 @@ export default function MaterielEditScreen() {
 
           {/* Espace en bas */}
           <View style={{ height: 120 }} />
-        </ScrollView>
+      </ScrollView>
       </KeyboardAvoidingView>
 
       {/* Modal pour le sélecteur de date d'achat */}
@@ -402,25 +402,25 @@ export default function MaterielEditScreen() {
           <View style={styles.modalOverlay}>
             <View style={styles.modalContent}>
               <View style={styles.modalHeader}>
-                <Pressable 
+                <Pressable
                   onPress={handleCancelAchatDate}
                   style={styles.modalButtonContainer}
                 >
                   <BodyText style={styles.modalButton}>Annuler</BodyText>
                 </Pressable>
                 <BodyText style={styles.modalTitle}>Sélectionner une date d&apos;achat</BodyText>
-                <Pressable 
+                <Pressable
                   onPress={handleConfirmAchatDate}
                   style={styles.modalButtonContainer}
                 >
                   <BodyText style={styles.modalButton}>Terminé</BodyText>
                 </Pressable>
-              </View> 
+              </View>
               <View style={{ padding: 20, backgroundColor: 'white' }}>
-                <DateTimePicker
+              <DateTimePicker
                   value={tempSelectedAchatDate}
                   mode="date"
-                  display="spinner"
+                display="spinner"
                   onChange={handleAchatDateChange}
                   maximumDate={new Date(2100, 11, 31)}
                   minimumDate={new Date(1900, 0, 1)}
@@ -433,14 +433,14 @@ export default function MaterielEditScreen() {
         </Modal>
       ) : (
         showAchatDatePicker && (
-          <DateTimePicker
+        <DateTimePicker
             value={selectedAchatDate}
             mode="date"
-            display="default"
+          display="default"
             onChange={handleAchatDateChange}
             maximumDate={new Date(2100, 11, 31)}
             minimumDate={new Date(1900, 0, 1)}
-          />
+        />
         )
       )}
 
