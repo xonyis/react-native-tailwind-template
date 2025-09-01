@@ -9,15 +9,15 @@ import { useRouter } from "expo-router";
 import { ArrowLeft, Calendar, Save } from "lucide-react-native";
 import React, { useState } from "react";
 import {
-  ActivityIndicator,
-  Alert,
-  KeyboardAvoidingView,
-  Modal,
-  Platform,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  View,
+    ActivityIndicator,
+    Alert,
+    KeyboardAvoidingView,
+    Modal,
+    Platform,
+    Pressable,
+    ScrollView,
+    StyleSheet,
+    View,
 } from "react-native";
 
 export default function ContratNewScreen() {
@@ -253,7 +253,7 @@ export default function ContratNewScreen() {
                           ? selectedClient.nom
                           : 'Sélectionner un client'
                     }
-                  </BodyText>
+                  </BodyText> 
                 </Pressable>
               </View>
             </View>

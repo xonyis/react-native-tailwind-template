@@ -1,18 +1,12 @@
 import { useAuth } from "@/context/AuthContext";
 import { servicesWebApi, Email } from "@/services/servicesWebApi";
-import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 
 export function useEmails() {
-  const { token } = useAuth();
-  const router = useRouter();
+  const { token, handleAuthError } = useAuth();
   const [emails, setEmails] = useState<Email[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
-  const handleAuthError = () => {
-    router.replace('/login');
-  };
 
   useEffect(() => {
     if (!token) {
@@ -36,7 +30,7 @@ export function useEmails() {
     };
 
     fetchEmails();
-  }, [token]);
+  }, [token, handleAuthError]);
 
   const refreshEmails = async () => {
     if (!token) return;

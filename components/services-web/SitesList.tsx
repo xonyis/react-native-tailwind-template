@@ -1,5 +1,6 @@
 import { BodyText, Heading3 } from "@/components/CustomText";
 import { Site } from "@/services/servicesWebApi";
+import { useRouter } from "expo-router";
 import { Calendar, Edit, Eye, Globe, Lock, ShieldUser } from "lucide-react-native";
 import React from "react";
 import { StyleSheet, TouchableOpacity, View } from "react-native";
@@ -19,6 +20,8 @@ export function SitesList({
   onDeletePress,
   loading = false 
 }: SitesListProps) {
+  const router = useRouter();
+
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
@@ -35,13 +38,21 @@ export function SitesList({
     );
   }
 
+  const handlePress = (site: any) => {
+    if (onItemPress) {
+      onItemPress(site);
+      return;
+    }
+    router.push(`/site-detail?id=${site.id}`);
+  };
+
   return (
     <View style={styles.container}>
       {sites.map((site) => (
         <TouchableOpacity
           key={site.id}
           style={styles.card}
-          onPress={() => onItemPress(site)}
+          onPress={() => handlePress(site)}
           activeOpacity={0.7}
         >
           <View style={styles.header}>
@@ -81,13 +92,14 @@ export function SitesList({
           <View style={styles.actionsContainer}>
             <TouchableOpacity 
               style={styles.actionButton}
-              onPress={() => onItemPress(site)}
+              onPress={() => handlePress(site)}
             >
               <Eye size={24} color="#3D9FCD" />
             </TouchableOpacity>
             <TouchableOpacity 
               style={styles.actionButton}
-              onPress={() => onEditPress(site)}
+              onPress={() => router.push(`/site-edit?id=${site.id}`)}
+    
             >
               <Edit size={24} color="#FBCA35" />
             </TouchableOpacity>

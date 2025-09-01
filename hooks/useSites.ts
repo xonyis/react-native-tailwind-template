@@ -1,18 +1,12 @@
 import { useAuth } from "@/context/AuthContext";
 import { servicesWebApi, Site } from "@/services/servicesWebApi";
-import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 
 export function useSites() {
-  const { token } = useAuth();
-  const router = useRouter();
+  const { token, handleAuthError } = useAuth();
   const [sites, setSites] = useState<Site[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
-  const handleAuthError = () => {
-    router.replace('/login');
-  };
 
   useEffect(() => {
     if (!token) {
@@ -36,7 +30,7 @@ export function useSites() {
     };
 
     fetchSites();
-  }, [token]);
+  }, [token, handleAuthError]);
 
   const refreshSites = async () => {
     if (!token) return;

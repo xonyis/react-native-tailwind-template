@@ -15,6 +15,7 @@ type AuthContextValue = {
   error: string | null;
   signIn: (credentials: LoginRequest) => Promise<void>;
   signOut: () => Promise<void>;
+  handleAuthError: () => Promise<void>;
   user: User | null;
 };
 
@@ -65,14 +66,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, []);
 
+  const handleAuthError = useCallback(async () => {
+    console.log('Erreur d\'authentification détectée, déconnexion automatique...');
+    await signOut();
+  }, [signOut]);
+
   const value = useMemo<AuthContextValue>(() => ({
     token: state.token,
     isLoading: state.isLoading,
     error: state.error,
     signIn,
     signOut,
+    handleAuthError,
     user: state.user,
-  }), [state.token, state.isLoading, state.error, state.user, signIn, signOut]);
+  }), [state.token, state.isLoading, state.error, state.user, signIn, signOut, handleAuthError]);
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };

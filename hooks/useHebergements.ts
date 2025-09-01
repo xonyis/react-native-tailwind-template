@@ -1,18 +1,12 @@
 import { useAuth } from "@/context/AuthContext";
 import { Hebergement, servicesWebApi } from "@/services/servicesWebApi";
-import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 
 export function useHebergements() {
-  const { token } = useAuth();
-  const router = useRouter();
+  const { token, handleAuthError } = useAuth();
   const [hebergements, setHebergements] = useState<Hebergement[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
-  const handleAuthError = () => {
-    router.replace('/login');
-  };
 
   useEffect(() => {
     if (!token) {
@@ -36,7 +30,7 @@ export function useHebergements() {
     };
 
     fetchHebergements();
-  }, [token]);
+  }, [token, handleAuthError]);
 
   const refreshHebergements = async () => {
     if (!token) return;

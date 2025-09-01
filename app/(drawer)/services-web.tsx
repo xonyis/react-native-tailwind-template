@@ -13,19 +13,22 @@ import { useHebergementsSearch } from "@/hooks/useHebergementsSearch";
 import { useSites } from "@/hooks/useSites";
 import { useSitesSearch } from "@/hooks/useSitesSearch";
 import { DrawerActions, useNavigation } from "@react-navigation/native";
+import { useRouter } from "expo-router";
+import { Plus } from "lucide-react-native";
 import React, { useState } from "react";
 import {
   Alert,
   RefreshControl,
   ScrollView,
   StyleSheet,
+  TouchableOpacity,
   View
 } from "react-native";
 
 
-
 export default function ServicesWebScreen() {
   const navigation = useNavigation();
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState<ServiceWebCategory>('hebergements');
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -51,12 +54,12 @@ export default function ServicesWebScreen() {
 
   const handleHebergementPress = (hebergement: any) => {
     console.log('Voir détails hébergement:', hebergement);
-    Alert.alert('Détails', `Voir les détails de ${hebergement.url}`);
+    router.push(`/hebergement-detail?id=${hebergement.id}`);
   };
 
   const handleHebergementEdit = (hebergement: any) => {
     console.log('Éditer hébergement:', hebergement);
-    Alert.alert('Édition', `Éditer ${hebergement.url}`);
+    router.push(`/hebergement-edit?id=${hebergement.id}`);
   };
 
   const handleHebergementDelete = (hebergement: any) => {
@@ -79,7 +82,7 @@ export default function ServicesWebScreen() {
 
   const handleSitePress = (site: any) => {
     console.log('Voir détails site:', site);
-    Alert.alert('Détails', `Voir les détails de ${site.url}`);
+    router.push(`/site-detail?id=${site.id}`);
   };
 
   const handleSiteEdit = (site: any) => {
@@ -107,7 +110,7 @@ export default function ServicesWebScreen() {
 
   const handleEmailPress = (email: any) => {
     console.log('Voir détails email:', email);
-    Alert.alert('Détails', `Voir les détails de ${email.adresse_email}`);
+    router.push(`/email-detail?id=${email.id}`);
   };
 
   const handleEmailEdit = (email: any) => {
@@ -163,7 +166,20 @@ export default function ServicesWebScreen() {
           <Heading1 style={{ color: "#4C4D5C", textAlign: "center", flex: 2 }}>
             Services Web
           </Heading1>
-
+          <TouchableOpacity
+            style={styles.addButton}
+            onPress={() => {
+              if (activeTab === 'hebergements') {
+                router.push('/hebergement-new');
+              } else if (activeTab === 'sites') {
+                router.push('/site-new');
+              } else if (activeTab === 'boites-mail') {
+                router.push('/email-new');
+              }
+            }}
+          >
+            <Plus size={24} color="#fff" />
+          </TouchableOpacity>
         </View>
         <BodyText style={{ color: "#666", textAlign: "center" }}>
           Gérez vos services web et consultez leurs informations
@@ -240,6 +256,15 @@ const styles = StyleSheet.create({
 
   content: {
     flex: 1,
+  },
+  addButton: {
+    backgroundColor: "#2563eb",
+    borderRadius: 20,
+    width: 40,
+    height: 40,
+    justifyContent: "center",
+    alignItems: "center",
+    marginLeft: 10,
   },
 });
 

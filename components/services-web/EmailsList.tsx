@@ -1,5 +1,6 @@
 import { BodyText, Heading3 } from "@/components/CustomText";
 import { Email } from "@/services/servicesWebApi";
+import { useRouter } from "expo-router";
 import { Calendar, Edit, Eye, FileText, Mail, User } from "lucide-react-native";
 import React from "react";
 import { StyleSheet, TouchableOpacity, View } from "react-native";
@@ -19,6 +20,9 @@ export const EmailsList: React.FC<EmailsListProps> = ({
   onEditPress,
   onDeletePress,
 }) => {
+  const router = useRouter();
+
+  
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
@@ -38,12 +42,12 @@ export const EmailsList: React.FC<EmailsListProps> = ({
   return (
     <View style={styles.container}>
       {emails.map((email) => (
-        <TouchableOpacity
-          key={email.id}
-          style={styles.card}
-          onPress={() => onItemPress(email)}
-          activeOpacity={0.7}
-        >
+                  <TouchableOpacity
+            key={email.id}
+            style={styles.card}
+            onPress={() => onItemPress?.(email)}
+            activeOpacity={0.7}
+          >
           <View style={styles.header}>
             <Heading3 style={styles.title}>{email.adresse_email}</Heading3>
           </View>
@@ -87,7 +91,7 @@ export const EmailsList: React.FC<EmailsListProps> = ({
             </TouchableOpacity>
             <TouchableOpacity 
               style={styles.actionButton}
-              onPress={() => onEditPress(email)}
+              onPress={() => router.push(`/email-edit?id=${email.id}`)}
             >
               <Edit size={24} color="#FBCA35" />
             </TouchableOpacity>

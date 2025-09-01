@@ -1,19 +1,19 @@
 import { AuthProvider } from "@/context/AuthContext";
 import {
-  Arimo_400Regular,
-  Arimo_400Regular_Italic,
-  Arimo_500Medium,
-  Arimo_600SemiBold,
-  Arimo_700Bold,
-  Arimo_700Bold_Italic,
+    Arimo_400Regular,
+    Arimo_400Regular_Italic,
+    Arimo_500Medium,
+    Arimo_600SemiBold,
+    Arimo_700Bold,
+    Arimo_700Bold_Italic,
 } from '@expo-google-fonts/arimo';
 import {
-  DMSans_400Regular,
-  DMSans_400Regular_Italic,
-  DMSans_500Medium,
-  DMSans_600SemiBold,
-  DMSans_700Bold,
-  DMSans_700Bold_Italic,
+    DMSans_400Regular,
+    DMSans_400Regular_Italic,
+    DMSans_500Medium,
+    DMSans_600SemiBold,
+    DMSans_700Bold,
+    DMSans_700Bold_Italic,
 } from '@expo-google-fonts/dm-sans';
 import { useFonts } from 'expo-font';
 import { Stack } from "expo-router";
@@ -67,6 +67,40 @@ export default function RootLayout() {
             headerShown: false,
             presentation: "modal" 
           }} 
+        />
+        <Stack.Screen 
+          name="hebergement-detail" 
+          options={{ 
+            headerShown: false,
+            presentation: "card" 
+          }} 
+        />
+        <Stack.Screen 
+          name="hebergement-edit" 
+          options={{ 
+            headerShown: false,
+            presentation: "modal" 
+          }} 
+        />
+        <Stack.Screen
+          name="(drawer)/hebergement-edit"
+          options={{ headerShown: false, presentation: "modal" }}
+        />
+        <Stack.Screen
+          name="(drawer)/hebergement-new"
+          options={{ headerShown: false, presentation: "modal" }}
+        />
+        <Stack.Screen
+          name="(drawer)/site-detail"
+          options={{ headerShown: false, presentation: "card" }}
+        />
+        <Stack.Screen
+          name="(drawer)/site-edit"
+          options={{ headerShown: false, presentation: "modal" }}
+        />
+        <Stack.Screen
+          name="(drawer)/site-new"
+          options={{ headerShown: false, presentation: "modal" }}
         />
         <Stack.Screen name="+not-found" />
       </Stack>
