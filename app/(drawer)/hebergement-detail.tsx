@@ -8,12 +8,12 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import { ArrowLeft, Calendar, Edit, Globe, Server, Trash } from "lucide-react-native";
 import React, { useEffect } from "react";
 import {
-  ActivityIndicator,
-  Alert,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  View,
+    ActivityIndicator,
+    Alert,
+    Pressable,
+    ScrollView,
+    StyleSheet,
+    View,
 } from "react-native";
 
 export default function HebergementDetailScreen() {
@@ -295,14 +295,23 @@ export default function HebergementDetailScreen() {
             <Heading3 style={styles.sectionTitle}>Client</Heading3>
             <View style={styles.clientInfo}>
               <BodyText style={styles.clientName}>{hebergement.client.nom}</BodyText>
-              {hebergement.client.raisonSocial && (
-                <BodyText style={styles.clientEmail}>{hebergement.client.raisonSocial}</BodyText>
+              {hebergement.client.ville && (
+                <BodyText style={styles.clientEmail}>{hebergement.client.ville}</BodyText>
               )}
-              {hebergement.client.adresseEmailClient && (
-                <BodyText style={styles.clientEmail}>{hebergement.client.adresseEmailClient}</BodyText>
+              {hebergement.client.adresseEmail1 && (
+                <BodyText style={styles.clientEmail}>{hebergement.client.adresseEmail1}</BodyText>
+              )}
+              {hebergement.client.adresseEmail2 && (
+                <BodyText style={styles.clientEmail}>{hebergement.client.adresseEmail2}</BodyText>
               )}
               {hebergement.client.numeroTel1 && (
                 <BodyText style={styles.clientPhone}>{hebergement.client.numeroTel1}</BodyText>
+              )}
+              {hebergement.client.numeroTel2 && (
+                <BodyText style={styles.clientPhone}>{hebergement.client.numeroTel2}</BodyText>
+              )}
+              {hebergement.client.referenceClient && (
+                <BodyText style={styles.clientPhone}>Réf: {hebergement.client.referenceClient}</BodyText>
               )}
             </View>
           </View>

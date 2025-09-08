@@ -45,8 +45,10 @@ export function HebergementsList({
           activeOpacity={0.7}
         >
           <View style={styles.header}>
-            <Heading3 style={styles.title}>{hebergement.client_nom}</Heading3>
-            {hebergement.is_nom_domaine && (
+            <Heading3 style={styles.title}>
+              {hebergement.client_nom || hebergement.client?.nom || 'Client non défini'}
+            </Heading3>
+            {(hebergement.is_nom_domaine || hebergement.isNomDomaine) && (
               <View style={styles.statusBadge}>
                 <Caption style={styles.statusText}>Domaine</Caption>
               </View>
@@ -61,16 +63,18 @@ export function HebergementsList({
               </View>
             )}
             
-            <View style={styles.infoRow}>
-              <FileText size={16} color="#666" />
-              <BodyText style={styles.infoText}>{hebergement.type_hebergement}</BodyText>
-            </View>
+            {(hebergement.type_hebergement || hebergement.typeHebergement) && (
+              <View style={styles.infoRow}>
+                <FileText size={16} color="#666" />
+                <BodyText style={styles.infoText}>{hebergement.type_hebergement || hebergement.typeHebergement}</BodyText>
+              </View>
+            )}
             
-            {hebergement.date_renouvellement && (
+            {(hebergement.date_renouvellement || hebergement.dateRenouvellement) && (
               <View style={styles.infoRow}>
                 <Calendar size={16} color="#666" />
                 <BodyText style={styles.infoText}>
-                  Renouvellement: {hebergement.date_renouvellement}
+                  Renouvellement: {hebergement.date_renouvellement || hebergement.dateRenouvellement}
                 </BodyText>
               </View>
             )}

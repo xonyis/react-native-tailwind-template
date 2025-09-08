@@ -1,32 +1,25 @@
 import { BodyText, Caption, Heading2 } from "@/components/CustomText";
 import { FAB } from "@/components/FAB";
 import { useAuth } from "@/context/AuthContext";
+import { useClientsList } from "@/hooks/useClientsList";
 import { servicesWebApi } from "@/services/servicesWebApi";
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { DrawerActions, useNavigation } from "@react-navigation/native";
 import { useRouter } from "expo-router";
 import { ArrowLeft, Calendar, Eye, EyeOff, Mail, Save, User } from "lucide-react-native";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import {
-  ActivityIndicator,
-  Alert,
-  KeyboardAvoidingView,
-  Modal,
-  Platform,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  TextInput,
-  View,
+    ActivityIndicator,
+    Alert,
+    KeyboardAvoidingView,
+    Modal,
+    Platform,
+    Pressable,
+    ScrollView,
+    StyleSheet,
+    TextInput,
+    View,
 } from "react-native";
-
-interface Client {
-  id: number;
-  nom: string;
-  raisonSocial?: string;
-  adresseEmailClient?: string;
-  numeroTel1?: string;
-}
 
 export default function EmailNewScreen() {
   const { token } = useAuth();
@@ -41,40 +34,42 @@ export default function EmailNewScreen() {
   const [tempSelectedRenouvellementDate, setTempSelectedRenouvellementDate] = useState(new Date());
   const [tempSelectedRappelDate, setTempSelectedRappelDate] = useState(new Date());
   const [showPassword, setShowPassword] = useState(false);
-  const [clients, setCliients] = useState<Client[]>([]);
-  const [loadingClients, setLoadingClients] = useState(true);
+  const [selectedClient, setSelectedClient] = useState<any>(null);
+  
+  // Hook pour récupérer la liste des clients
+  const { clients, loading: loadingClients } = useClientsList();
   
   // États pour les champs du formulaire
   const [formData, setFormData] = useState({
-    clientId: '',
-    adresseMail: '',
-    typeEmail: '',
-    motDePasse: '',
-    dateDeRenouvellement: '',
-    dateRappel: '',
-    derniereFacture: '',
+    adresse_mail: '',
+    type_email: '',
+    serveur: '',
+    mot_de_passe: '',
+    date_de_renouvellement: '',
+    date_rappel: '',
+    derniere_facture: '',
   });
 
   // Options pour les sélecteurs
-  const typeEmailOptions = ['Exchange', 'MX', 'Autre'];
+  const typeEmailOptions = [
+    { label: 'MX', value: 'MX' },
+    { label: 'Exchange', value: 'Exchange' }
+  ];
 
-  useEffect(() => {
-    fetchClients();
-  }, []);
+  const serveurOptions = [
+    { label: 'Hosted 1 (ex2.mail.ovh.net)', value: 'hosted 1 (ex2.mail.ovh.net)' },
+    { label: 'Hosted 2 (ex3.mail.ovh.net)', value: 'hosted 2 (ex3.mail.ovh.net)' },
+    { label: 'Hosted 3 (ex4.mail.ovh.net)', value: 'hosted 3 (ex4.mail.ovh.net)' },
+    { label: 'Hosted 4 (ex4.mail.ovh.net)', value: 'hosted 4 (ex4.mail.ovh.net)' },
+    { label: 'Hosted 5 (ex4.mail.ovh.net)', value: 'hosted 5 (ex4.mail.ovh.net)' }
+  ];
 
-  const fetchClients = async () => {
-    if (!token) return;
-    
-    try {
-      setLoadingClients(true);
-      const clientsData = await servicesWebApi.getClients(token);
-      setCliients(clientsData);
-    } catch (error) {
-      console.error('Erreur lors du chargement des clients:', error);
-      Alert.alert("Erreur", "Impossible de charger la liste des clients");
-    } finally {
-      setLoadingClients(false);
-    }
+  // Fonction pour mettre à jour un champ du formulaire
+  const updateFormField = (field: string, value: any) => {
+    setFormData(prev => ({
+      ...prev,
+      [field]: value
+    }));
   };
 
   const handleGoBack = () => {
@@ -97,7 +92,7 @@ export default function EmailNewScreen() {
     if (!token) return;
 
     // Validation simple
-    if (!formData.clientId.trim() || !formData.adresseMail.trim() || !formData.typeEmail.trim()) {
+    if (!selectedClient || !formData.adresse_mail.trim() || !formData.type_email.trim()) {
       Alert.alert("Erreur", "Le client, l'adresse email et le type d'email sont obligatoires");
       return;
     }
@@ -107,17 +102,22 @@ export default function EmailNewScreen() {
       
       // Préparer les données pour l'API
       const createData: any = {
-        clientId: parseInt(formData.clientId),
-        adresseMail: formData.adresseMail.trim(),
-        typeEmail: formData.typeEmail.trim(),
-        dateDeRenouvellement: formatDateForAPI(formData.dateDeRenouvellement),
-        dateRappel: formatDateForAPI(formData.dateRappel),
-        derniereFacture: formData.derniereFacture.trim(),
+        client: selectedClient.id,
+        adresse_mail: formData.adresse_mail.trim(),
+        type_email: formData.type_email.trim(),
+        date_de_renouvellement: formatDateForAPI(formData.date_de_renouvellement),
+        date_rappel: formatDateForAPI(formData.date_rappel),
+        derniere_facture: formData.derniere_facture.trim(),
       };
 
+      // Ajouter le serveur s'il a été sélectionné
+      if (formData.serveur.trim()) {
+        createData.serveur = formData.serveur.trim();
+      }
+
       // Ajouter le mot de passe seulement s'il a été saisi
-      if (formData.motDePasse.trim()) {
-        createData.motDePasse = formData.motDePasse.trim();
+      if (formData.mot_de_passe.trim()) {
+        createData.mot_de_passe = formData.mot_de_passe.trim();
       }
 
       console.log('Données envoyées à l\'API:', createData);
@@ -155,7 +155,7 @@ export default function EmailNewScreen() {
         setSelectedRenouvellementDate(selectedDate);
         setFormData(prev => ({
           ...prev,
-          dateDeRenouvellement: selectedDate.toISOString().split('T')[0]
+          date_de_renouvellement: selectedDate.toISOString().split('T')[0]
         }));
       }
     }
@@ -173,7 +173,7 @@ export default function EmailNewScreen() {
         setSelectedRappelDate(selectedDate);
         setFormData(prev => ({
           ...prev,
-          dateRappel: selectedDate.toISOString().split('T')[0]
+          date_rappel: selectedDate.toISOString().split('T')[0]
         }));
       }
     }
@@ -183,7 +183,7 @@ export default function EmailNewScreen() {
     setSelectedRenouvellementDate(tempSelectedRenouvellementDate);
     setFormData(prev => ({
       ...prev,
-      dateDeRenouvellement: tempSelectedRenouvellementDate.toISOString().split('T')[0]
+      date_de_renouvellement: tempSelectedRenouvellementDate.toISOString().split('T')[0]
     }));
     setShowRenouvellementDatePicker(false);
   };
@@ -192,7 +192,7 @@ export default function EmailNewScreen() {
     setSelectedRappelDate(tempSelectedRappelDate);
     setFormData(prev => ({
       ...prev,
-      dateRappel: tempSelectedRappelDate.toISOString().split('T')[0]
+      date_rappel: tempSelectedRappelDate.toISOString().split('T')[0]
     }));
     setShowRappelDatePicker(false);
   };
@@ -206,6 +206,62 @@ export default function EmailNewScreen() {
     setTempSelectedRappelDate(selectedRappelDate);
     setShowRappelDatePicker(false);
   };
+
+  // Fonction pour sélectionner un client
+  const handleSelectClient = () => {
+    if (loadingClients) {
+      Alert.alert('Chargement', 'Veuillez attendre le chargement des clients');
+      return;
+    }
+    
+    Alert.alert(
+      'Sélectionner un client',
+      'Choisissez un client dans la liste',
+      [
+        {
+          text: 'Annuler',
+          style: 'cancel',
+        },
+        ...clients.map(client => ({
+          text: `${client.nom} - ${client.ville || 'Ville non spécifiée'}`,
+          onPress: () => setSelectedClient(client),
+        }))
+      ]
+    );
+  };
+
+  // Fonction pour rendre un sélecteur
+  const renderPicker = (label: string, field: string, options: any[], value: string, icon?: any) => (
+    <View style={styles.inputGroup}>
+      <Caption style={styles.label}>{label}</Caption>
+      <Pressable
+        style={styles.pickerButton}
+        onPress={() => {
+          Alert.alert(
+            label,
+            'Sélectionnez une option',
+            [
+              {
+                text: 'Annuler',
+                style: 'cancel',
+              },
+              ...options.map(option => ({
+                text: option.label,
+                onPress: () => updateFormField(field, option.value)
+              }))
+            ]
+          );
+        }}
+      >
+        <View style={styles.pickerContent}>
+          {icon && <View style={styles.pickerIcon}>{icon}</View>}
+          <BodyText style={styles.pickerText}>
+            {options.find(opt => opt.value === value)?.label || 'Sélectionner une option'}
+          </BodyText>
+        </View>
+      </Pressable>
+    </View>
+  );
 
   return (
     <View style={styles.container}>
@@ -236,44 +292,25 @@ export default function EmailNewScreen() {
             {/* Client */}
             <View style={styles.inputGroup}>
               <Caption style={styles.label}>Client *</Caption>
-              <View style={styles.pickerContainer}>
-                <Pressable
-                  style={styles.pickerButton}
-                  onPress={() => {
-                    if (loadingClients) {
-                      Alert.alert('Chargement', 'Veuillez attendre le chargement des clients');
-                      return;
-                    }
-                    
-                    Alert.alert(
-                      'Sélectionner un client',
-                      'Choisissez un client dans la liste',
-                      [
-                        {
-                          text: 'Annuler',
-                          style: 'cancel',
-                        },
-                        ...clients.map(client => ({
-                          text: client.nom,
-                          onPress: () => {
-                            setFormData(prev => ({
-                              ...prev,
-                              client_id: client.id
-                            }));
-                          },
-                        }))
-                      ]
-                    );
-                  }}
-                >
+              <Pressable
+                style={styles.pickerButton}
+                onPress={handleSelectClient}
+                disabled={loadingClients}
+              >
+                <View style={styles.pickerContent}>
+                  <View style={styles.pickerIcon}>
+                    <User size={20} color="#6b7280" />
+                  </View>
                   <BodyText style={styles.pickerText}>
-                    {(() => {
-                      const selectedClient = clients.find(c => c.id.toString() === formData.clientId);
-                      return selectedClient ? selectedClient.nom : 'Sélectionner un client';
-                    })()}
+                    {loadingClients 
+                      ? 'Chargement des clients...' 
+                      : selectedClient 
+                        ? `${selectedClient.nom} - ${selectedClient.ville || 'Ville non spécifiée'}`
+                        : 'Sélectionner un client'
+                    }
                   </BodyText>
-                </Pressable>
-              </View>
+                </View>
+              </Pressable>
             </View>
 
             {/* Adresse email */}
@@ -283,8 +320,8 @@ export default function EmailNewScreen() {
                 <Mail size={20} color="#6b7280" />
                 <TextInput
                   style={styles.textInput}
-                  value={formData.adresseMail}
-                  onChangeText={(text) => setFormData(prev => ({ ...prev, adresseMail: text }))}
+                  value={formData.adresse_mail}
+                  onChangeText={(value) => updateFormField('adresse_mail', value)}
                   placeholder="exemple@domaine.com"
                   placeholderTextColor="#4C4D5C"
                   keyboardType="email-address"
@@ -295,28 +332,10 @@ export default function EmailNewScreen() {
             </View>
 
             {/* Type d'email */}
-            <View style={styles.inputGroup}>
-              <Caption style={styles.label}>Type d'email *</Caption>
-              <View style={styles.pickerContainer}>
-                <Pressable
-                  style={styles.pickerButton}
-                  onPress={() => {
-                    Alert.alert(
-                      'Type d\'email',
-                      'Sélectionnez le type d\'email',
-                      typeEmailOptions.map(option => ({
-                        text: option,
-                        onPress: () => setFormData(prev => ({ ...prev, typeEmail: option }))
-                      }))
-                    );
-                  }}
-                >
-                  <BodyText style={styles.pickerText}>
-                    {formData.typeEmail || 'Sélectionner un type'}
-                  </BodyText>
-                </Pressable>
-              </View>
-            </View>
+            {renderPicker('Type d\'email *', 'type_email', typeEmailOptions, formData.type_email, <Mail size={20} color="#6b7280" />)}
+
+            {/* Serveur */}
+            {renderPicker('Serveur', 'serveur', serveurOptions, formData.serveur, <User size={20} color="#6b7280" />)}
 
             {/* Mot de passe */}
             <View style={styles.inputGroup}>
@@ -325,8 +344,8 @@ export default function EmailNewScreen() {
                 <User size={20} color="#6b7280" />
                 <TextInput
                   style={styles.textInput}
-                  value={formData.motDePasse}
-                  onChangeText={(text) => setFormData(prev => ({ ...prev, motDePasse: text }))}
+                  value={formData.mot_de_passe}
+                  onChangeText={(value) => updateFormField('mot_de_passe', value)}
                   placeholder="Mot de passe de la boîte mail"
                   placeholderTextColor="#4C4D5C"
                   secureTextEntry={!showPassword}
@@ -341,10 +360,15 @@ export default function EmailNewScreen() {
                 </Pressable>
               </View>
             </View>
+          </View>
+
+          {/* Dates */}
+          <View style={styles.section}>
+            <Heading2 style={styles.sectionTitle}>Dates</Heading2>
 
             {/* Date de renouvellement */}
             <View style={styles.inputGroup}>
-              <Caption style={styles.label}>Date de renouvellement</Caption>
+              <Caption style={styles.label}>Date de renouvellement *</Caption>
               <Pressable
                 style={styles.dateButton}
                 onPress={() => {
@@ -354,7 +378,7 @@ export default function EmailNewScreen() {
               >
                 <Calendar size={20} color="#6b7280" />
                 <BodyText style={styles.dateText}>
-                  {formData.dateDeRenouvellement ? formatDateForDisplay(formData.dateDeRenouvellement) : 'Sélectionner une date'}
+                  {formData.date_de_renouvellement ? formatDateForDisplay(formData.date_de_renouvellement) : 'Sélectionner une date'}
                 </BodyText>
               </Pressable>
             </View>
@@ -371,23 +395,27 @@ export default function EmailNewScreen() {
               >
                 <Calendar size={20} color="#6b7280" />
                 <BodyText style={styles.dateText}>
-                  {formData.dateRappel ? formatDateForDisplay(formData.dateRappel) : 'Sélectionner une date'}
+                  {formData.date_rappel ? formatDateForDisplay(formData.date_rappel) : 'Sélectionner une date'}
                 </BodyText>
               </Pressable>
             </View>
+          </View>
+
+          {/* Facturation */}
+          <View style={styles.section}>
+            <Heading2 style={styles.sectionTitle}>Facturation</Heading2>
 
             {/* Dernière facture */}
             <View style={styles.inputGroup}>
-              <Caption style={styles.label}>Dernière facture</Caption>
+              <Caption style={styles.label}>Numéro de dernière facture</Caption>
               <View style={styles.inputContainer}>
                 <Mail size={20} color="#6b7280" />
                 <TextInput
                   style={styles.textInput}
-                  value={formData.derniereFacture}
-                  onChangeText={(text) => setFormData(prev => ({ ...prev, derniereFacture: text }))}
-                  placeholder="Numéro de la dernière facture"
+                  value={formData.derniere_facture}
+                  onChangeText={(value) => updateFormField('derniere_facture', value)}
+                  placeholder="Ex: FACT-2024-001"
                   placeholderTextColor="#4C4D5C"
-                 
                 />
               </View>
             </View>
@@ -581,18 +609,26 @@ const styles = StyleSheet.create({
   eyeButton: {
     padding: 4,
   },
-  pickerContainer: {
+  pickerButton: {
+    padding: 12,
     borderWidth: 1,
     borderColor: "#d1d5db",
     borderRadius: 8,
     backgroundColor: "#fff",
   },
-  pickerButton: {
-    padding: 12,
+  pickerContent: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+  },
+  pickerIcon: {
+    width: 20,
+    alignItems: "center",
   },
   pickerText: {
     color: "#374151",
     fontSize: 16,
+    flex: 1,
   },
   dateButton: {
     flexDirection: "row",

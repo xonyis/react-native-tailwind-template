@@ -2,20 +2,38 @@ import { makeAuthenticatedRequest } from './authApi';
 
 export interface Hebergement {
   id: number;
+  client_id?: number;
+  client_nom?: string;
   client?: {
     id: number;
     nom: string;
-    raisonSocial?: string;
-    adresseEmailClient?: string;
+    ville?: string;
+    adresseEmail1?: string;
+    adresseEmail2?: string;
+    adresseClient?: string;
+    codePostal?: string;
+    pays?: string;
     numeroTel1?: string;
+    numeroTel2?: string;
+    referenceClient?: string;
+    typeClient?: string;
+    visiteAnnuelle?: string;
+    commentaire?: string;
   } | null;
-  dateRenouvellement?: string; // Format: Y-m-d
-  dateRappel?: string; // Format: Y-m-d
+  date_renouvellement?: string; // Format: Y-m-d
+  date_rappel?: string; // Format: Y-m-d
+  derniere_facture?: string;
+  type_hebergement?: string;
+  is_nom_domaine: boolean;
+  url?: string;
+  date_creation?: string; // Format: Y-m-d H:i:s
+  // Alias pour compatibilité
+  dateRenouvellement?: string;
+  dateRappel?: string;
   derniereFacture?: string;
-  typeHebergement: string;
+  typeHebergement?: string;
   isNomDomaine: boolean;
-  url: string;
-  dateCreation?: string; // Format: Y-m-d H:i:s
+  dateCreation?: string;
 }
 
 export interface Site {
@@ -36,14 +54,38 @@ export interface Site {
 
 export interface Email {
   id: number;
-  client_nom: string;
-  adresse_email: string;
-  type_email: string;
-  serveur: string;
-  mot_de_passe: string;
-  date_renouvellement: string;
-  date_rappel: string;
-  derniere_facture: string;
+  client_id?: number;
+  client_nom?: string;
+  client?: {
+    id: number;
+    nom: string;
+    ville?: string;
+    adresseEmail1?: string;
+    adresseEmail2?: string;
+    adresseClient?: string;
+    codePostal?: string;
+    pays?: string;
+    numeroTel1?: string;
+    numeroTel2?: string;
+    referenceClient?: string;
+    typeClient?: string;
+    visiteAnnuelle?: string;
+    commentaire?: string;
+  } | null;
+  adresse_mail?: string;
+  type_email?: string;
+  serveur?: string;
+  mot_de_passe?: string;
+  date_de_renouvellement?: string; // Format: Y-m-d
+  date_rappel?: string; // Format: Y-m-d
+  derniere_facture?: string;
+  // Alias pour compatibilité
+  adresseMail?: string;
+  typeEmail?: string;
+  motDePasse?: string;
+  dateDeRenouvellement?: string;
+  dateRappel?: string;
+  derniereFacture?: string;
 }
 
 export interface EmailDetail {
@@ -51,16 +93,94 @@ export interface EmailDetail {
   client?: {
     id: number;
     nom: string;
-    raisonSocial?: string;
-    adresseEmailClient?: string;
+    ville?: string;
+    adresseEmail1?: string;
+    adresseEmail2?: string;
+    adresseClient?: string;
+    codePostal?: string;
+    pays?: string;
     numeroTel1?: string;
+    numeroTel2?: string;
+    referenceClient?: string;
+    typeClient?: string;
+    visiteAnnuelle?: string;
+    commentaire?: string;
   } | null;
-  adresseMail: string;
-  typeEmail: string;
-  motDePasseDechiffre: string;
+  adresse_mail?: string;
+  type_email?: string;
+  serveur?: string;
+  mot_de_passe?: string;
+  date_de_renouvellement?: string;
+  date_rappel?: string;
+  derniere_facture?: string;
+  // Alias pour compatibilité
+  adresseMail?: string;
+  typeEmail?: string;
+  motDePasse?: string;
   dateDeRenouvellement?: string;
   dateRappel?: string;
   derniereFacture?: string;
+}
+
+export interface Visite {
+  id: number;
+  client_id: number;
+  client_nom: string;
+  date_visite: string; // Format: d/m/Y
+  date_programmee?: string; // Format: d/m/Y
+  statut: string; // programmee, effectuee, annulee
+  type_visite?: string; // annuelle, ponctuelle, maintenance
+  technicien?: string;
+  commentaires?: string;
+  // Alias pour compatibilité avec l'ancien format
+  client?: {
+    id: number;
+    nom: string;
+    ville?: string;
+    adresseClient?: string;
+    codePostal?: string;
+    pays?: string;
+    numeroTel1?: string;
+    numeroTel2?: string;
+    referenceClient?: string;
+    typeClient?: string;
+    visiteAnnuelle?: string;
+    commentaire?: string;
+  } | null;
+  dateVisite?: string;
+  dateProgrammee?: string;
+  typeVisite?: string;
+  dateCreation?: string;
+}
+
+export interface VisiteDetail {
+  id: number;
+  client_id: number;
+  client_nom: string;
+  date_visite: string; // Format: d/m/Y
+  date_programmee?: string; // Format: d/m/Y
+  statut: string; // programmee, effectuee, annulee
+  type_visite?: string; // annuelle, ponctuelle, maintenance
+  technicien?: string;
+  commentaires?: string;
+  // Alias pour compatibilité avec l'ancien format
+  client?: {
+    id: number;
+    nom: string;
+    ville?: string;
+    adresseClient?: string;
+    codePostal?: string;
+    pays?: string;
+    numeroTel1?: string;
+    numeroTel2?: string;
+    referenceClient?: string;
+    typeClient?: string;
+    visiteAnnuelle?: string;
+    commentaire?: string;
+  } | null;
+  dateVisite?: string;
+  dateProgrammee?: string;
+  typeVisite?: string;
   dateCreation?: string;
 }
 
@@ -175,5 +295,75 @@ async createSite(data: Partial<Site>, token: string, onAuthError?: () => void): 
       body: JSON.stringify(data),
     }, onAuthError);
     return response.email;
+  },
+
+  // === VISITES ===
+  
+  // Récupérer toutes les visites
+  async getVisites(token: string, onAuthError?: () => void): Promise<Visite[]> {
+    console.log('🔍 getVisites: Début de l\'appel API');
+    const response = await makeAuthenticatedRequest('/api/visites', token, {}, onAuthError);
+    console.log('🔍 getVisites: Réponse reçue:', response);
+    console.log('🔍 getVisites: Type de response:', typeof response);
+    console.log('🔍 getVisites: response.data:', response.data);
+    console.log('🔍 getVisites: response est un array?', Array.isArray(response));
+    
+    // Si response.data existe, l'utiliser, sinon utiliser response directement
+    const result = response.data || response || [];
+    console.log('🔍 getVisites: Résultat final:', result);
+    console.log('🔍 getVisites: Nombre d\'éléments:', result.length);
+    return result;
+  },
+
+  // Récupérer les visites programmées
+  async getVisitesProgrammees(token: string, onAuthError?: () => void): Promise<Visite[]> {
+    const response = await makeAuthenticatedRequest('/api/visites/programmees', token, {}, onAuthError);
+    console.log('🔍 getVisites: Réponse reçue:', response);
+    console.log('🔍 getVisites: Type de response:', typeof response);
+    console.log('🔍 getVisites: response.data:', response.data);
+    console.log('🔍 getVisites: response est un array?', Array.isArray(response));
+    
+    // Si response.data existe, l'utiliser, sinon utiliser response directement
+    const result = response.data || response || [];
+    console.log('🔍 getVisites: Résultat final:', result);
+    console.log('🔍 getVisites: Nombre d\'éléments:', result.length);
+    return result;
+  },
+
+  // Récupérer les clients sans visite
+  async getClientsSansVisite(token: string, onAuthError?: () => void): Promise<any[]> {
+    const response = await makeAuthenticatedRequest('/api/clients/sans-visite', token, {}, onAuthError);
+    return response.data || [];
+  },
+
+  // Récupérer une visite spécifique par ID
+  async getVisiteById(id: number, token: string, onAuthError?: () => void): Promise<VisiteDetail> {
+    const response = await makeAuthenticatedRequest(`/api/visites/${id}`, token, {}, onAuthError);
+    return response;
+  },
+
+  // Créer une nouvelle visite
+  async createVisite(visiteData: any, token: string, onAuthError?: () => void): Promise<Visite> {
+    const response = await makeAuthenticatedRequest('/api/visites', token, {
+      method: 'POST',
+      body: JSON.stringify(visiteData),
+    }, onAuthError);
+    return response;
+  },
+
+  // Mettre à jour une visite
+  async updateVisite(id: number, visiteData: any, token: string, onAuthError?: () => void): Promise<Visite> {
+    const response = await makeAuthenticatedRequest(`/api/visites/${id}`, token, {
+      method: 'PUT',
+      body: JSON.stringify(visiteData),
+    }, onAuthError);
+    return response;
+  },
+
+  // Supprimer une visite
+  async deleteVisite(id: number, token: string, onAuthError?: () => void): Promise<void> {
+    await makeAuthenticatedRequest(`/api/visites/${id}`, token, {
+      method: 'DELETE',
+    }, onAuthError);
   },
 };

@@ -5,7 +5,7 @@ import { servicesWebApi } from "@/services/servicesWebApi";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { DrawerActions, useNavigation } from "@react-navigation/native";
 import { useRouter } from "expo-router";
-import { ArrowLeft, Calendar, Globe, Save } from "lucide-react-native";
+import { ArrowLeft, Calendar, Save } from "lucide-react-native";
 import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
@@ -29,12 +29,13 @@ export default function HebergementNewScreen() {
   const [saving, setSaving] = useState(false);
   const [showRenouvellementDatePicker, setShowRenouvellementDatePicker] = useState(false);
   const [showRappelDatePicker, setShowRappelDatePicker] = useState(false);
+  const [showCreationDatePicker, setShowCreationDatePicker] = useState(false);
   const [selectedRenouvellementDate, setSelectedRenouvellementDate] = useState(new Date());
   const [selectedRappelDate, setSelectedRappelDate] = useState(new Date());
+  const [selectedCreationDate, setSelectedCreationDate] = useState(new Date());
   const [tempSelectedRenouvellementDate, setTempSelectedRenouvellementDate] = useState(new Date());
   const [tempSelectedRappelDate, setTempSelectedRappelDate] = useState(new Date());
-  const [showTypePicker, setShowTypePicker] = useState(false);
-  const [showClientPicker, setShowClientPicker] = useState(false);
+  const [tempSelectedCreationDate, setTempSelectedCreationDate] = useState(new Date());
   const [loadingClients, setLoadingClients] = useState(false);
   const [clients, setClients] = useState<any[]>([]);
 
@@ -52,7 +53,11 @@ export default function HebergementNewScreen() {
     dateRenouvellement: '',
     dateRappel: '',
     derniereFacture: '',
+    dateCreation: '',
   });
+
+  // Trouver le client sélectionné
+  const selectedClient = clients.find(client => client.id === formData.clientId);
 
   // Charger les clients
   const loadClients = async () => {
@@ -100,32 +105,23 @@ export default function HebergementNewScreen() {
       return;
     }
 
-    if (!formData.typeHebergement.trim()) {
-      Alert.alert("Erreur", "Le type d'hébergement est obligatoire");
-      return;
-    }
-
-    if (formData.isNomDomaine && !formData.url.trim()) {
-      Alert.alert("Erreur", "L'URL est obligatoire quand le nom de domaine est inclus");
-      return;
-    }
-
     try {
       setSaving(true);
       
       // Préparer les données pour l'API
       const createData = {
         clientId: formData.clientId,
-        typeHebergement: formData.typeHebergement.trim(),
+        typeHebergement: formData.typeHebergement.trim() || null,
         isNomDomaine: formData.isNomDomaine,
-        url: formData.isNomDomaine ? formData.url.trim() : '',
-        dateRenouvellement: formatDateForAPI(formData.dateRenouvellement) || undefined,
-        dateRappel: formatDateForAPI(formData.dateRappel) || undefined,
-        derniereFacture: formData.derniereFacture.trim() || undefined,
-      };
+        url: formData.url.trim() || null,
+        dateRenouvellement: formatDateForAPI(formData.dateRenouvellement),
+        dateRappel: formatDateForAPI(formData.dateRappel),
+        derniereFacture: formData.derniereFacture.trim() || null,
+        dateCreation: formatDateForAPI(formData.dateCreation),
+      } as any;
 
       console.log('Données envoyées à l\'API:', createData);
-
+      
       const newHebergement = await servicesWebApi.createHebergement(createData, token);
       
       Alert.alert(
@@ -138,30 +134,66 @@ export default function HebergementNewScreen() {
           }
         ]
       );
-    } catch (error) {
-      console.error('Erreur lors de la création:', error);
-      Alert.alert(
-        "Erreur",
-        error instanceof Error ? error.message : "Erreur lors de la création de l'hébergement"
-      );
+    } catch (err) {
+      console.error('Erreur lors de la création:', err);
+      const message = err instanceof Error ? err.message : "Erreur lors de la création";
+      Alert.alert("Erreur", message);
     } finally {
       setSaving(false);
     }
   };
 
-  // Gestionnaires pour les DatePickers
-  const handleRenouvellementDateChange = (event: any, selectedDate?: Date) => {
+  const handleRenouvellementDateChange = (event: any, selectedDate: Date | undefined) => {
     if (Platform.OS === 'android') {
       setShowRenouvellementDatePicker(false);
-      if (selectedDate) {
+    }
+
+    if (selectedDate) {
+      if (Platform.OS === 'ios') {
+        setTempSelectedRenouvellementDate(selectedDate);
+      } else {
         setSelectedRenouvellementDate(selectedDate);
         setFormData(prev => ({
           ...prev,
           dateRenouvellement: selectedDate.toISOString().split('T')[0]
         }));
       }
-    } else {
-      setTempSelectedRenouvellementDate(selectedDate || tempSelectedRenouvellementDate);
+    }
+  };
+
+  const handleRappelDateChange = (event: any, selectedDate: Date | undefined) => {
+    if (Platform.OS === 'android') {
+      setShowRappelDatePicker(false);
+    }
+
+    if (selectedDate) {
+      if (Platform.OS === 'ios') {
+        setTempSelectedRappelDate(selectedDate);
+      } else {
+        setSelectedRappelDate(selectedDate);
+        setFormData(prev => ({
+          ...prev,
+          dateRappel: selectedDate.toISOString().split('T')[0]
+        }));
+      }
+    }
+  };
+
+  const handleCreationDateChange = (event: any, selectedDate: Date | undefined) => {
+    if (Platform.OS === 'android') {
+      setShowCreationDatePicker(false);
+    }
+
+    if (selectedDate) {
+      if (Platform.OS === 'ios') {
+        setTempSelectedCreationDate(selectedDate);
+      } else {
+        setSelectedCreationDate(selectedDate);
+        setFormData(prev => ({
+          ...prev,
+          dateCreation: selectedDate.toISOString().split('T')[0]
+        }));
+      }
     }
   };
 
@@ -174,26 +206,6 @@ export default function HebergementNewScreen() {
     setShowRenouvellementDatePicker(false);
   };
 
-  const handleCancelRenouvellementDate = () => {
-    setTempSelectedRenouvellementDate(selectedRenouvellementDate);
-    setShowRenouvellementDatePicker(false);
-  };
-
-  const handleRappelDateChange = (event: any, selectedDate?: Date) => {
-    if (Platform.OS === 'android') {
-      setShowRappelDatePicker(false);
-      if (selectedDate) {
-        setSelectedRappelDate(selectedDate);
-        setFormData(prev => ({
-          ...prev,
-          dateRappel: selectedDate.toISOString().split('T')[0]
-        }));
-      }
-    } else {
-      setTempSelectedRappelDate(selectedDate || tempSelectedRappelDate);
-    }
-  };
-
   const handleConfirmRappelDate = () => {
     setSelectedRappelDate(tempSelectedRappelDate);
     setFormData(prev => ({
@@ -203,156 +215,181 @@ export default function HebergementNewScreen() {
     setShowRappelDatePicker(false);
   };
 
+  const handleConfirmCreationDate = () => {
+    setSelectedCreationDate(tempSelectedCreationDate);
+    setFormData(prev => ({
+      ...prev,
+      dateCreation: tempSelectedCreationDate.toISOString().split('T')[0]
+    }));
+    setShowCreationDatePicker(false);
+  };
+
+  const handleCancelRenouvellementDate = () => {
+    setTempSelectedRenouvellementDate(selectedRenouvellementDate);
+    setShowRenouvellementDatePicker(false);
+  };
+
   const handleCancelRappelDate = () => {
     setTempSelectedRappelDate(selectedRappelDate);
     setShowRappelDatePicker(false);
   };
 
-  const getSelectedClientName = () => {
-    if (!formData.clientId) return null;
-    const client = clients.find(c => c.id === formData.clientId);
-    return client?.nom || null;
+  const handleCancelCreationDate = () => {
+    setTempSelectedCreationDate(selectedCreationDate);
+    setShowCreationDatePicker(false);
   };
+
+  const handleSelectClient = () => {
+    if (loadingClients) {
+      Alert.alert('Chargement', 'Veuillez attendre le chargement des clients');
+      return;
+    }
+
+    if (clients.length === 0) {
+      Alert.alert('Aucun client', 'Aucun client disponible');
+      return;
+    }
+
+    Alert.alert(
+      'Sélectionner un client',
+      'Choisissez un client dans la liste',
+      [
+        {
+          text: 'Annuler',
+          style: 'cancel',
+        },
+        ...clients.map(client => ({
+          text: `${client.nom} - ${client.ville || 'Ville non spécifiée'}`,
+          onPress: () => {
+            setFormData(prev => ({
+              ...prev,
+              clientId: client.id
+            }));
+          },
+        }))
+      ]
+    );
+  };
+
+  const showPicker = (title: string, options: any[], currentValue: any, onSelect: (value: any) => void) => {
+    Alert.alert(
+      title,
+      'Sélectionnez une option',
+      [
+        {
+          text: 'Annuler',
+          style: 'cancel',
+        },
+        ...options.map(option => ({
+          text: option.label,
+          onPress: () => onSelect(option.value)
+        }))
+      ]
+    );
+  };
+
+  const updateFormField = (field: keyof typeof formData, value: any) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+  };
+
+  const renderPicker = (label: string, field: keyof typeof formData, options: any[], currentValue: any) => (
+    <View style={styles.inputGroup}>
+      <Caption style={styles.label}>{label}</Caption>
+      <Pressable
+        style={styles.pickerButton}
+        onPress={() => showPicker(label, options, currentValue, (value) => updateFormField(field, value))}
+      >
+        <BodyText style={styles.pickerText}>
+          {options.find(opt => opt.value === currentValue)?.label || 'Sélectionner une option'}
+        </BodyText>
+      </Pressable>
+    </View>
+  );
 
   return (
     <View style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
         <Pressable onPress={handleGoBack} style={styles.backButton}>
-          <ArrowLeft size={24} color="#1f2937" />
+          <ArrowLeft size={24} color="#374151" />
         </Pressable>
-        <BodyText style={styles.headerTitle}>Nouvel hébergement</BodyText>
+        <Heading2 style={styles.headerTitle}>Nouvel hébergement</Heading2>
         <Pressable onPress={handleSave} style={styles.saveButton} disabled={saving}>
           {saving ? (
-            <ActivityIndicator size="small" color="#2563eb" />
+            <ActivityIndicator size="small" color="#fff" />
           ) : (
-            <Save size={20} color="#2563eb" />
+            <Save size={20} color="#fff" />
           )}
         </Pressable>
       </View>
 
-      <KeyboardAvoidingView style={styles.keyboardAvoidingView} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+      <KeyboardAvoidingView 
+        style={styles.keyboardAvoidingView}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      >
         <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+          {/* Informations de l'hébergement */}
           <View style={styles.section}>
-            <Heading2 style={styles.sectionTitle}>Informations de l&apos;hébergement</Heading2>
-
+            <Heading2 style={styles.sectionTitle}>Informations de l'hébergement</Heading2>
+            
             {/* Client */}
             <View style={styles.inputGroup}>
               <Caption style={styles.label}>Client *</Caption>
-              <View style={styles.pickerContainer}>
-                <Pressable
-                  style={styles.pickerButton}
-                  onPress={() => {
-                    if (loadingClients) {
-                      Alert.alert('Chargement', 'Veuillez attendre le chargement des clients');
-                      return;
-                    }
-                    
-                    Alert.alert(
-                      'Sélectionner un client',
-                      'Choisissez un client dans la liste',
-                      [
-                        {
-                          text: 'Annuler',
-                          style: 'cancel',
-                        },
-                        ...clients.map(client => ({
-                          text: client.nom,
-                          onPress: () => {
-                            setFormData(prev => ({
-                              ...prev,
-                              clientId: client.id
-                            }));
-                          },
-                        }))
-                      ]
-                    );
-                  }}
-                >
-                  <BodyText style={styles.pickerText}>
-                    {(() => {
-                      const selectedClient = clients.find(c => c.id === formData.clientId);
-                      return selectedClient ? selectedClient.nom : 'Sélectionner un client';
-                    })()}
-                  </BodyText>
-                </Pressable>
-              </View>
+              <Pressable
+                style={styles.pickerButton}
+                onPress={handleSelectClient}
+                disabled={loadingClients}
+              >
+                <BodyText style={styles.pickerText}>
+                  {loadingClients 
+                    ? 'Chargement des clients...' 
+                    : selectedClient 
+                      ? `${selectedClient.nom} - ${selectedClient.ville || 'Ville non spécifiée'}`
+                      : 'Sélectionner un client'
+                  }
+                </BodyText> 
+              </Pressable>
             </View>
 
             {/* Type d'hébergement */}
-            <View style={styles.inputGroup}>
-              <Caption style={styles.label}>Type d&apos;hébergement *</Caption>
-              <View style={styles.pickerContainer}>
-                <Pressable
-                  style={styles.pickerButton}
-                  onPress={() => {
-                    Alert.alert(
-                      'Type d\'hébergement',
-                      'Sélectionnez le type d\'hébergement',
-                      [
-                        {
-                          text: 'Annuler',
-                          style: 'cancel',
-                        },
-                        ...typeHebergementOptions.map(option => ({
-                          text: option.label,
-                          onPress: () => {
-                            setFormData(prev => ({
-                              ...prev,
-                              typeHebergement: option.value
-                            }));
-                          },
-                        }))
-                      ]
-                    );
-                  }}
-                >
-                  <BodyText style={styles.pickerText}>
-                    {formData.typeHebergement || 'Sélectionner le type d\'hébergement'}
-                  </BodyText>
-                </Pressable>
-              </View>
-            </View>
+            {renderPicker('Type d\'hébergement', 'typeHebergement', typeHebergementOptions, formData.typeHebergement)}
 
             {/* Nom de domaine inclus */}
             <View style={styles.inputGroup}>
               <Caption style={styles.label}>Nom de domaine inclus</Caption>
               <View style={styles.switchContainer}>
-                <BodyText style={styles.switchLabel}>
-                  {formData.isNomDomaine ? 'Oui' : 'Non'}
-                </BodyText>
                 <Switch
                   value={formData.isNomDomaine}
-                  onValueChange={(value) => {
-                    setFormData(prev => ({
-                      ...prev,
-                      isNomDomaine: value,
-                      url: value ? prev.url : '' // Effacer l'URL si le switch est désactivé
-                    }));
-                  }}
-                  trackColor={{ false: "#d1d5db", true: "#2563eb" }}
-                  thumbColor="#fff"
+                  onValueChange={(value) => updateFormField('isNomDomaine', value)}
+                  trackColor={{ false: '#d1d5db', true: '#2563eb' }}
+                  thumbColor={formData.isNomDomaine ? '#fff' : '#f4f3f4'}
                 />
+                <BodyText style={styles.switchLabel}>
+                  {formData.isNomDomaine ? 'Inclus' : 'Non inclus'}
+                </BodyText>
               </View>
             </View>
 
-            {/* URL (conditionnel) */}
+            {/* URL - Affiché seulement si nom de domaine inclus */}
             {formData.isNomDomaine && (
               <View style={styles.inputGroup}>
-                <Caption style={styles.label}>URL *</Caption>
-                <View style={styles.inputContainer}>
-                  <Globe size={20} color="#6b7280" />
-                  <TextInput
-                    style={styles.textInput}
-                    value={formData.url}
-                    onChangeText={(text) => setFormData(prev => ({ ...prev, url: text }))}
-                    placeholder="Saisir l'URL"
-                    placeholderTextColor="#9ca3af"
-                  />
-                </View>
+                <Caption style={styles.label}>URL</Caption>
+                <TextInput
+                  style={styles.textInput}
+                  value={formData.url}
+                  onChangeText={(value) => updateFormField('url', value)}
+                  placeholder="https://exemple.com"
+                  autoCapitalize="none"
+                  keyboardType="url"
+                />
               </View>
             )}
+          </View>
 
+          {/* Dates */}
+          <View style={styles.section}>
+            <Heading2 style={styles.sectionTitle}>Dates</Heading2>
+            
             {/* Date de renouvellement */}
             <View style={styles.inputGroup}>
               <Caption style={styles.label}>Date de renouvellement</Caption>
@@ -387,19 +424,38 @@ export default function HebergementNewScreen() {
               </Pressable>
             </View>
 
-            {/* Dernière facture */}
+            {/* Date de création */}
             <View style={styles.inputGroup}>
-              <Caption style={styles.label}>Dernière facture</Caption>
-              <View style={styles.inputContainer}>
-                <Globe size={20} color="#6b7280" />
-                <TextInput
-                  style={styles.textInput}
-                  value={formData.derniereFacture}
-                  onChangeText={(text) => setFormData(prev => ({ ...prev, derniereFacture: text }))}
-                  placeholder="Saisir la dernière facture"
-                  placeholderTextColor="#9ca3af"
-                />
-              </View>
+              <Caption style={styles.label}>Date de création</Caption>
+              <Pressable
+                style={styles.dateButton}
+                onPress={() => {
+                  setTempSelectedCreationDate(selectedCreationDate);
+                  setShowCreationDatePicker(true);
+                }}
+              >
+                <Calendar size={20} color="#6b7280" />
+                <BodyText style={styles.dateText}>
+                  {formData.dateCreation ? formatDateForDisplay(formData.dateCreation) : 'Sélectionner une date'}
+                </BodyText>
+              </Pressable>
+            </View>
+          </View>
+
+          {/* Facturation */}
+          <View style={styles.section}>
+            <Heading2 style={styles.sectionTitle}>Facturation</Heading2>
+            
+            {/* Numéro de dernière facture */}
+            <View style={styles.inputGroup}>
+              <Caption style={styles.label}>Numéro de dernière facture</Caption>
+              <TextInput
+                style={styles.textInput}
+                value={formData.derniereFacture}
+                onChangeText={(value) => updateFormField('derniereFacture', value)}
+                placeholder="Ex: FACT-2024-001"
+                autoCapitalize="characters"
+              />
             </View>
           </View>
 
@@ -408,48 +464,46 @@ export default function HebergementNewScreen() {
         </ScrollView>
       </KeyboardAvoidingView>
 
-      {/* DatePickers */}
+      {/* Modal pour le sélecteur de date de renouvellement */}
       {Platform.OS === 'ios' ? (
-        showRenouvellementDatePicker && (
-          <Modal
-            animationType="fade"
-            transparent={true}
-            visible={showRenouvellementDatePicker}
-            onRequestClose={() => setShowRenouvellementDatePicker(false)}
-          >
-            <View style={styles.modalOverlay}>
-              <View style={styles.modalContent}>
-                <View style={styles.modalHeader}>
-                  <Pressable
-                    onPress={handleCancelRenouvellementDate}
-                    style={styles.modalButtonContainer}
-                  >
-                    <BodyText style={styles.modalButton}>Annuler</BodyText>
-                  </Pressable>
-                  <BodyText style={styles.modalTitle}>Sélectionner une date de renouvellement</BodyText>
-                  <Pressable
-                    onPress={handleConfirmRenouvellementDate}
-                    style={styles.modalButtonContainer}
-                  >
-                    <BodyText style={styles.modalButton}>Terminé</BodyText>
-                  </Pressable>
-                </View>
-                <View style={{ padding: 20, backgroundColor: 'white' }}>
-                  <DateTimePicker
-                    value={tempSelectedRenouvellementDate}
-                    mode="date"
-                    display="spinner"
-                    onChange={handleRenouvellementDateChange}
-                    maximumDate={new Date(2100, 11, 31)}
-                    minimumDate={new Date(1900, 0, 1)}
-                    themeVariant="light"
-                    textColor="#000"
-                  />
-                </View>
+        <Modal
+          animationType="fade"
+          transparent={true}
+          visible={showRenouvellementDatePicker}
+          onRequestClose={() => setShowRenouvellementDatePicker(false)}
+        >
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalContent}>
+              <View style={styles.modalHeader}>
+                <Pressable 
+                  onPress={handleCancelRenouvellementDate}
+                  style={styles.modalButtonContainer}
+                >
+                  <BodyText style={styles.modalButton}>Annuler</BodyText>
+                </Pressable>
+                <BodyText style={styles.modalTitle}>Sélectionner une date de renouvellement</BodyText>
+                <Pressable 
+                  onPress={handleConfirmRenouvellementDate}
+                  style={styles.modalButtonContainer}
+                >
+                  <BodyText style={styles.modalButton}>Terminé</BodyText>
+                </Pressable>
+              </View> 
+              <View style={{ padding: 20, backgroundColor: 'white' }}>
+                <DateTimePicker
+                  value={tempSelectedRenouvellementDate}
+                  mode="date"
+                  display="spinner"
+                  onChange={handleRenouvellementDateChange}
+                  maximumDate={new Date(2100, 11, 31)}
+                  minimumDate={new Date(1900, 0, 1)}
+                  themeVariant="light"
+                  textColor="#000"  
+                />
               </View>
             </View>
-          </Modal>
-        )
+          </View>
+        </Modal>
       ) : (
         showRenouvellementDatePicker && (
           <DateTimePicker
@@ -463,47 +517,46 @@ export default function HebergementNewScreen() {
         )
       )}
 
+      {/* Modal pour le sélecteur de date de rappel */}
       {Platform.OS === 'ios' ? (
-        showRappelDatePicker && (
-          <Modal
-            animationType="fade"
-            transparent={true}
-            visible={showRappelDatePicker}
-            onRequestClose={() => setShowRappelDatePicker(false)}
-          >
-            <View style={styles.modalOverlay}>
-              <View style={styles.modalContent}>
-                <View style={styles.modalHeader}>
-                  <Pressable
-                    onPress={handleCancelRappelDate}
-                    style={styles.modalButtonContainer}
-                  >
-                    <BodyText style={styles.modalButton}>Annuler</BodyText>
-                  </Pressable>
-                  <BodyText style={styles.modalTitle}>Sélectionner une date de rappel</BodyText>
-                  <Pressable
-                    onPress={handleConfirmRappelDate}
-                    style={styles.modalButtonContainer}
-                  >
-                    <BodyText style={styles.modalButton}>Terminé</BodyText>
-                  </Pressable>
-                </View>
-                <View style={{ padding: 20, backgroundColor: 'white' }}>
-                  <DateTimePicker
-                    value={tempSelectedRappelDate}
-                    mode="date"
-                    display="spinner"
-                    onChange={handleRappelDateChange}
-                    maximumDate={new Date(2100, 11, 31)}
-                    minimumDate={new Date(1900, 0, 1)}
-                    themeVariant="light"
-                    textColor="#000"  
-                  />
-                </View>
+        <Modal
+          animationType="fade"
+          transparent={true}
+          visible={showRappelDatePicker}
+          onRequestClose={() => setShowRappelDatePicker(false)}
+        >
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalContent}>
+              <View style={styles.modalHeader}>
+                <Pressable 
+                  onPress={handleCancelRappelDate}
+                  style={styles.modalButtonContainer}
+                >
+                  <BodyText style={styles.modalButton}>Annuler</BodyText>
+                </Pressable>
+                <BodyText style={styles.modalTitle}>Sélectionner une date de rappel</BodyText>
+                <Pressable 
+                  onPress={handleConfirmRappelDate}
+                  style={styles.modalButtonContainer}
+                >
+                  <BodyText style={styles.modalButton}>Terminé</BodyText>
+                </Pressable>
+              </View> 
+              <View style={{ padding: 20, backgroundColor: 'white' }}>
+                <DateTimePicker
+                  value={tempSelectedRappelDate}
+                  mode="date"
+                  display="spinner"
+                  onChange={handleRappelDateChange}
+                  maximumDate={new Date(2100, 11, 31)}
+                  minimumDate={new Date(1900, 0, 1)}
+                  themeVariant="light"
+                  textColor="#000"  
+                />
               </View>
             </View>
-          </Modal>
-        )
+          </View>
+        </Modal>
       ) : (
         showRappelDatePicker && (
           <DateTimePicker
@@ -517,78 +570,58 @@ export default function HebergementNewScreen() {
         )
       )}
 
-      {/* Modal pour le sélecteur de type d'hébergement */}
-      <Modal
-        animationType="fade"
-        transparent={true}
-        visible={showTypePicker}
-        onRequestClose={() => setShowTypePicker(false)}
-      >
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <View style={styles.modalHeader}>
-              <BodyText style={styles.modalTitle}>Type d&apos;hébergement</BodyText>
-              <BodyText style={styles.modalSubtitle}>Sélectionnez le type d&apos;hébergement</BodyText>
-            </View>
-            <View style={styles.modalOptions}>
-              {typeHebergementOptions.map((option) => (
-                <Pressable
-                  key={option.value}
-                  style={styles.modalOption}
-                  onPress={() => {
-                    setFormData(prev => ({ ...prev, typeHebergement: option.value }));
-                    setShowTypePicker(false);
-                  }}
+      {/* Modal pour le sélecteur de date de création */}
+      {Platform.OS === 'ios' ? (
+        <Modal
+          animationType="fade"
+          transparent={true}
+          visible={showCreationDatePicker}
+          onRequestClose={() => setShowCreationDatePicker(false)}
+        >
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalContent}>
+              <View style={styles.modalHeader}>
+                <Pressable 
+                  onPress={handleCancelCreationDate}
+                  style={styles.modalButtonContainer}
                 >
-                  <BodyText style={[
-                    styles.modalOptionText,
-                    formData.typeHebergement === option.value && styles.modalSelectedOption
-                  ]}>
-                    {option.label}
-                  </BodyText>
+                  <BodyText style={styles.modalButton}>Annuler</BodyText>
                 </Pressable>
-              ))}
+                <BodyText style={styles.modalTitle}>Sélectionner une date de création</BodyText>
+                <Pressable 
+                  onPress={handleConfirmCreationDate}
+                  style={styles.modalButtonContainer}
+                >
+                  <BodyText style={styles.modalButton}>Terminé</BodyText>
+                </Pressable>
+              </View> 
+              <View style={{ padding: 20, backgroundColor: 'white' }}>
+                <DateTimePicker
+                  value={tempSelectedCreationDate}
+                  mode="date"
+                  display="spinner"
+                  onChange={handleCreationDateChange}
+                  maximumDate={new Date(2100, 11, 31)}
+                  minimumDate={new Date(1900, 0, 1)}
+                  themeVariant="light"
+                  textColor="#000"  
+                />
+              </View>
             </View>
           </View>
-        </View>
-      </Modal>
-
-      {/* Modal pour le sélecteur de client */}
-      <Modal
-        animationType="fade"
-        transparent={true}
-        visible={showClientPicker}
-        onRequestClose={() => setShowClientPicker(false)}
-      >
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <View style={styles.modalHeader}>
-              <BodyText style={styles.modalTitle}>Sélectionner un client</BodyText>
-              <BodyText style={styles.modalSubtitle}>Choisissez un client pour l&apos;hébergement</BodyText>
-            </View>
-            <View style={styles.modalOptions}>
-              {loadingClients ? (
-                <BodyText style={styles.modalOptionText}>Chargement des clients...</BodyText>
-              ) : clients.length === 0 ? (
-                <BodyText style={styles.modalOptionText}>Aucun client trouvé.</BodyText>
-              ) : (
-                clients.map((client) => (
-                  <Pressable
-                    key={client.id}
-                    style={styles.modalOption}
-                    onPress={() => {
-                      setFormData(prev => ({ ...prev, clientId: client.id }));
-                      setShowClientPicker(false);
-                    }}
-                  >
-                    <BodyText style={styles.modalOptionText}>{client.nom}</BodyText>
-                  </Pressable>
-                ))
-              )}
-            </View>
-          </View>
-        </View>
-      </Modal>
+        </Modal>
+      ) : (
+        showCreationDatePicker && (
+          <DateTimePicker
+            value={selectedCreationDate}
+            mode="date"
+            display="default"
+            onChange={handleCreationDateChange}
+            maximumDate={new Date(2100, 11, 31)}
+            minimumDate={new Date(1900, 0, 1)}
+          />
+        )
+      )}
 
       <FAB onPress={() => navigation.dispatch(DrawerActions.openDrawer())} />
     </View>
@@ -605,23 +638,26 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
     paddingHorizontal: 16,
-    paddingTop: 60,
-    paddingBottom: 16,
+    paddingVertical: 12,
+    paddingTop: 50,
+    backgroundColor: "#fff",
     borderBottomWidth: 1,
     borderBottomColor: "#e5e7eb",
-    backgroundColor: "#fff",
   },
   backButton: {
     padding: 8,
   },
   headerTitle: {
+    flex: 1,
+    textAlign: "center",
     color: "#1f2937",
-    fontSize: 18,
-    fontWeight: "600",
   },
   saveButton: {
+    backgroundColor: "#2563eb",
     padding: 8,
     borderRadius: 8,
+    minWidth: 40,
+    alignItems: 'center',
   },
   keyboardAvoidingView: {
     flex: 1,
@@ -630,65 +666,66 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   section: {
-    padding: 16,
+    padding: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: "#f3f4f6",
   },
   sectionTitle: {
-    color: "#1f2937",
-    fontSize: 18,
-    fontWeight: "600",
-    marginBottom: 16,
+    color: "#374151",
+    marginBottom: 20,
   },
   inputGroup: {
     marginBottom: 20,
   },
   label: {
     color: "#6b7280",
-    fontSize: 14,
-    fontWeight: "500",
     marginBottom: 8,
+    fontWeight: "500",
   },
-  inputContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    borderWidth: 1,
-    borderColor: "#d1d5db",
-    borderRadius: 8,
-    backgroundColor: "#fff",
-    paddingHorizontal: 12,
-  },
-  textInput: {
-    flex: 1,
-    paddingVertical: 12,
-    paddingHorizontal: 8,
-    fontSize: 16,
-    color: "#374151",
-  },
-  switchContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingVertical: 12,
-    paddingHorizontal: 12,
+  pickerButton: {
+    padding: 12,
     borderWidth: 1,
     borderColor: "#d1d5db",
     borderRadius: 8,
     backgroundColor: "#fff",
   },
-  switchLabel: {
-    fontSize: 16,
+  pickerText: {
     color: "#374151",
+    fontSize: 16,
   },
-  dateInput: {
-    flex: 1,
-    paddingVertical: 12,
-    paddingHorizontal: 8,
+  dateButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    padding: 12,
+    borderWidth: 1,
+    borderColor: "#d1d5db",
+    borderRadius: 8,
+    backgroundColor: "#fff",
+    gap: 12,
   },
   dateText: {
-    fontSize: 16,
     color: "#374151",
+    fontSize: 16,
   },
-  placeholderText: {
-    color: "#9ca3af",
+  textInput: {
+    borderWidth: 1,
+    borderColor: "#d1d5db",
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 12,
+    fontSize: 16,
+    color: "#1f2937",
+    backgroundColor: "#fff",
+  },
+  switchContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    paddingVertical: 8,
+  },
+  switchLabel: {
+    color: "#374151",
+    fontSize: 16,
   },
   modalOverlay: {
     flex: 1,
@@ -718,37 +755,6 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: '#e5e7eb',
   },
-  modalTitle: {
-    color: '#1f2937',
-    fontWeight: '600',
-    fontSize: 16,
-    textAlign: 'center',
-    flex: 1,
-  },
-  modalSubtitle: {
-    color: '#6b7280',
-    fontSize: 14,
-    textAlign: 'center',
-    marginTop: 4,
-  },
-  modalOptions: {
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-  },
-  modalOption: {
-    paddingVertical: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: '#f3f4f6',
-  },
-  modalOptionText: {
-    fontSize: 16,
-    color: '#374151',
-    textAlign: 'center',
-  },
-  modalSelectedOption: {
-    color: '#2563eb',
-    fontWeight: '600',
-  },
   modalButtonContainer: {
     minWidth: 60,
   },
@@ -757,43 +763,11 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     textAlign: 'center',
   },
-  selectContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    borderWidth: 1,
-    borderColor: '#d1d5db',
-    borderRadius: 8,
-    backgroundColor: '#fff',
+  modalTitle: {
+    color: '#1f2937',
+    fontWeight: '600',
+    fontSize: 16,
+    textAlign: 'center',
     flex: 1,
-  },
-  selectText: {
-    color: '#374151',
-    fontSize: 16,
-  },
-  pickerContainer: {
-    borderWidth: 1,
-    borderColor: "#d1d5db",
-    borderRadius: 8,
-    backgroundColor: "#fff",
-  },
-  pickerButton: {
-    padding: 12,
-  },
-  pickerText: {
-    color: "#374151",
-    fontSize: 16,
-  },
-  dateButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    padding: 12,
-    borderWidth: 1,
-    borderColor: "#d1d5db",
-    borderRadius: 8,
-    backgroundColor: "#fff",
-    gap: 12,
   },
 });

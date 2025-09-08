@@ -41,35 +41,53 @@ export default function EmailEditScreen() {
   
   // États pour les champs du formulaire
   const [formData, setFormData] = useState({
-    adresseMail: '',
-    typeEmail: '',
-    motDePasse: '',
-    dateDeRenouvellement: '',
-    dateRappel: '',
-    derniereFacture: '',
+    adresse_mail: '',
+    type_email: '',
+    serveur: '',
+    mot_de_passe: '',
+    date_de_renouvellement: '',
+    date_rappel: '',
+    derniere_facture: '',
   });
 
   // Options pour les sélecteurs
-  const typeEmailOptions = ['Exchange', 'MX', 'Autre'];
+  const typeEmailOptions = [
+    { label: 'MX', value: 'MX' },
+    { label: 'Exchange', value: 'Exchange' }
+  ];
+
+  const serveurOptions = [
+    { label: 'Hosted 1 (ex2.mail.ovh.net)', value: 'hosted 1 (ex2.mail.ovh.net)' },
+    { label: 'Hosted 2 (ex3.mail.ovh.net)', value: 'hosted 2 (ex3.mail.ovh.net)' },
+    { label: 'Hosted 3 (ex4.mail.ovh.net)', value: 'hosted 3 (ex4.mail.ovh.net)' },
+    { label: 'Hosted 4 (ex4.mail.ovh.net)', value: 'hosted 4 (ex4.mail.ovh.net)' },
+    { label: 'Hosted 5 (ex4.mail.ovh.net)', value: 'hosted 5 (ex4.mail.ovh.net)' }
+  ];
 
   useEffect(() => {
     if (email) {
       // Initialiser le formulaire avec les données de l'email
       setFormData({
-        adresseMail: email.adresseMail || '',
-        typeEmail: email.typeEmail || '',
-        motDePasse: '', // On ne pré-remplit pas le mot de passe pour des raisons de sécurité
-        dateDeRenouvellement: email.dateDeRenouvellement || '',
-        dateRappel: email.dateRappel || '',
-        derniereFacture: email.derniereFacture || '',
+        adresse_mail: email.adresse_mail || email.adresseMail || '',
+        type_email: email.type_email || email.typeEmail || '',
+        serveur: email.serveur || '',
+        mot_de_passe: '', // On ne pré-remplit pas le mot de passe pour des raisons de sécurité
+        date_de_renouvellement: email.date_de_renouvellement || email.dateDeRenouvellement || '',
+        date_rappel: email.date_rappel || email.dateRappel || '',
+        derniere_facture: email.derniere_facture || email.derniereFacture || '',
       });
 
       // Initialiser les dates sélectionnées
-      if (email.dateDeRenouvellement) {
-        setSelectedRenouvellementDate(new Date(email.dateDeRenouvellement));
+      const renouvellementDate = email.date_de_renouvellement || email.dateDeRenouvellement;
+      if (renouvellementDate) {
+        setSelectedRenouvellementDate(new Date(renouvellementDate));
+        setTempSelectedRenouvellementDate(new Date(renouvellementDate));
       }
-      if (email.dateRappel) {
-        setSelectedRappelDate(new Date(email.dateRappel));
+      
+      const rappelDate = email.date_rappel || email.dateRappel;
+      if (rappelDate) {
+        setSelectedRappelDate(new Date(rappelDate));
+        setTempSelectedRappelDate(new Date(rappelDate));
       }
     }
   }, [email]);
@@ -94,7 +112,7 @@ export default function EmailEditScreen() {
     if (!email || !token) return;
 
     // Validation simple
-    if (!formData.adresseMail.trim() || !formData.typeEmail.trim()) {
+    if (!formData.adresse_mail.trim() || !formData.type_email.trim()) {
       Alert.alert("Erreur", "L'adresse email et le type d'email sont obligatoires");
       return;
     }
@@ -104,16 +122,21 @@ export default function EmailEditScreen() {
       
       // Préparer les données pour l'API
       const updateData: any = {
-        adresseMail: formData.adresseMail.trim(),
-        typeEmail: formData.typeEmail.trim(),
-        dateDeRenouvellement: formatDateForAPI(formData.dateDeRenouvellement),
-        dateRappel: formatDateForAPI(formData.dateRappel),
-        derniereFacture: formData.derniereFacture.trim(),
+        adresse_mail: formData.adresse_mail.trim(),
+        type_email: formData.type_email.trim(),
+        date_de_renouvellement: formatDateForAPI(formData.date_de_renouvellement),
+        date_rappel: formatDateForAPI(formData.date_rappel),
+        derniere_facture: formData.derniere_facture.trim(),
       };
 
+      // Ajouter le serveur s'il a été sélectionné
+      if (formData.serveur.trim()) {
+        updateData.serveur = formData.serveur.trim();
+      }
+
       // Ajouter le mot de passe seulement s'il a été modifié
-      if (formData.motDePasse.trim()) {
-        updateData.motDePasse = formData.motDePasse.trim();
+      if (formData.mot_de_passe.trim()) {
+        updateData.mot_de_passe = formData.mot_de_passe.trim();
       }
 
       console.log('Données envoyées à l\'API:', updateData);
@@ -151,7 +174,7 @@ export default function EmailEditScreen() {
         setSelectedRenouvellementDate(selectedDate);
         setFormData(prev => ({
           ...prev,
-          dateDeRenouvellement: selectedDate.toISOString().split('T')[0]
+          date_de_renouvellement: selectedDate.toISOString().split('T')[0]
         }));
       }
     }
@@ -169,7 +192,7 @@ export default function EmailEditScreen() {
         setSelectedRappelDate(selectedDate);
         setFormData(prev => ({
           ...prev,
-          dateRappel: selectedDate.toISOString().split('T')[0]
+          date_rappel: selectedDate.toISOString().split('T')[0]
         }));
       }
     }
@@ -179,7 +202,7 @@ export default function EmailEditScreen() {
     setSelectedRenouvellementDate(tempSelectedRenouvellementDate);
     setFormData(prev => ({
       ...prev,
-      dateDeRenouvellement: tempSelectedRenouvellementDate.toISOString().split('T')[0]
+      date_de_renouvellement: tempSelectedRenouvellementDate.toISOString().split('T')[0]
     }));
     setShowRenouvellementDatePicker(false);
   };
@@ -188,7 +211,7 @@ export default function EmailEditScreen() {
     setSelectedRappelDate(tempSelectedRappelDate);
     setFormData(prev => ({
       ...prev,
-      dateRappel: tempSelectedRappelDate.toISOString().split('T')[0]
+      date_rappel: tempSelectedRappelDate.toISOString().split('T')[0]
     }));
     setShowRappelDatePicker(false);
   };
@@ -202,6 +225,47 @@ export default function EmailEditScreen() {
     setTempSelectedRappelDate(selectedRappelDate);
     setShowRappelDatePicker(false);
   };
+
+  // Fonction pour mettre à jour un champ du formulaire
+  const updateFormField = (field: string, value: any) => {
+    setFormData(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+
+  // Fonction pour rendre un sélecteur
+  const renderPicker = (label: string, field: string, options: any[], value: string, icon?: any) => (
+    <View style={styles.inputGroup}>
+      <Caption style={styles.label}>{label}</Caption>
+      <Pressable
+        style={styles.pickerButton}
+        onPress={() => {
+          Alert.alert(
+            label,
+            'Sélectionnez une option',
+            [
+              {
+                text: 'Annuler',
+                style: 'cancel',
+              },
+              ...options.map(option => ({
+                text: option.label,
+                onPress: () => updateFormField(field, option.value)
+              }))
+            ]
+          );
+        }}
+      >
+        <View style={styles.pickerContent}>
+          {icon && <View style={styles.pickerIcon}>{icon}</View>}
+          <BodyText style={styles.pickerText}>
+            {options.find(opt => opt.value === value)?.label || 'Sélectionner une option'}
+          </BodyText>
+        </View>
+      </Pressable>
+    </View>
+  );
 
   if (loading) {
     return (
@@ -251,6 +315,17 @@ export default function EmailEditScreen() {
           <View style={styles.section}>
             <Heading2 style={styles.sectionTitle}>Informations de la boîte mail</Heading2>
             
+            {/* Client (lecture seule) */}
+            <View style={styles.inputGroup}>
+              <Caption style={styles.label}>Client</Caption>
+              <View style={[styles.inputContainer, { backgroundColor: '#f9fafb' }]}>
+                <User size={20} color="#6b7280" />
+                <BodyText style={[styles.textInput, { color: '#6b7280' }]}>
+                  {email?.client?.nom || 'Client non défini'}
+                </BodyText>
+              </View>
+            </View>
+
             {/* Adresse email */}
             <View style={styles.inputGroup}>
               <Caption style={styles.label}>Adresse email *</Caption>
@@ -258,8 +333,8 @@ export default function EmailEditScreen() {
                 <Mail size={20} color="#6b7280" />
                 <TextInput
                   style={styles.textInput}
-                  value={formData.adresseMail}
-                  onChangeText={(text) => setFormData(prev => ({ ...prev, adresseMail: text }))}
+                  value={formData.adresse_mail}
+                  onChangeText={(value) => updateFormField('adresse_mail', value)}
                   placeholder="exemple@domaine.com"
                   keyboardType="email-address"
                   autoCapitalize="none"
@@ -269,28 +344,10 @@ export default function EmailEditScreen() {
             </View>
 
             {/* Type d'email */}
-            <View style={styles.inputGroup}>
-              <Caption style={styles.label}>Type d'email *</Caption>
-              <View style={styles.pickerContainer}>
-                <Pressable
-                  style={styles.pickerButton}
-                  onPress={() => {
-                    Alert.alert(
-                      'Type d\'email',
-                      'Sélectionnez le type d\'email',
-                      typeEmailOptions.map(option => ({
-                        text: option,
-                        onPress: () => setFormData(prev => ({ ...prev, typeEmail: option }))
-                      }))
-                    );
-                  }}
-                >
-                  <BodyText style={styles.pickerText}>
-                    {formData.typeEmail || 'Sélectionner un type'}
-                  </BodyText>
-                </Pressable>
-              </View>
-            </View>
+            {renderPicker('Type d\'email *', 'type_email', typeEmailOptions, formData.type_email, <Mail size={20} color="#6b7280" />)}
+
+            {/* Serveur */}
+            {renderPicker('Serveur', 'serveur', serveurOptions, formData.serveur, <User size={20} color="#6b7280" />)}
 
             {/* Mot de passe */}
             <View style={styles.inputGroup}>
@@ -299,8 +356,8 @@ export default function EmailEditScreen() {
                 <User size={20} color="#6b7280" />
                 <TextInput
                   style={styles.textInput}
-                  value={formData.motDePasse}
-                  onChangeText={(text) => setFormData(prev => ({ ...prev, motDePasse: text }))}
+                  value={formData.mot_de_passe}
+                  onChangeText={(value) => updateFormField('mot_de_passe', value)}
                   placeholder="Laisser vide pour ne pas modifier"
                   placeholderTextColor="#4C4D5C"
                   secureTextEntry={!showPassword}
@@ -315,10 +372,15 @@ export default function EmailEditScreen() {
                 </Pressable>
               </View>
             </View>
+          </View>
+
+          {/* Dates */}
+          <View style={styles.section}>
+            <Heading2 style={styles.sectionTitle}>Dates</Heading2>
 
             {/* Date de renouvellement */}
             <View style={styles.inputGroup}>
-              <Caption style={styles.label}>Date de renouvellement</Caption>
+              <Caption style={styles.label}>Date de renouvellement *</Caption>
               <Pressable
                 style={styles.dateButton}
                 onPress={() => {
@@ -328,7 +390,7 @@ export default function EmailEditScreen() {
               >
                 <Calendar size={20} color="#6b7280" />
                 <BodyText style={styles.dateText}>
-                  {formData.dateDeRenouvellement ? formatDateForDisplay(formData.dateDeRenouvellement) : 'Sélectionner une date'}
+                  {formData.date_de_renouvellement ? formatDateForDisplay(formData.date_de_renouvellement) : 'Sélectionner une date'}
                 </BodyText>
               </Pressable>
             </View>
@@ -345,22 +407,27 @@ export default function EmailEditScreen() {
               >
                 <Calendar size={20} color="#6b7280" />
                 <BodyText style={styles.dateText}>
-                  {formData.dateRappel ? formatDateForDisplay(formData.dateRappel) : 'Sélectionner une date'}
+                  {formData.date_rappel ? formatDateForDisplay(formData.date_rappel) : 'Sélectionner une date'}
                 </BodyText>
               </Pressable>
             </View>
+          </View>
+
+          {/* Facturation */}
+          <View style={styles.section}>
+            <Heading2 style={styles.sectionTitle}>Facturation</Heading2>
 
             {/* Dernière facture */}
             <View style={styles.inputGroup}>
-              <Caption style={styles.label}>Dernière facture</Caption>
+              <Caption style={styles.label}>Numéro de dernière facture</Caption>
               <View style={styles.inputContainer}>
                 <Mail size={20} color="#6b7280" />
                 <TextInput
                   style={styles.textInput}
-                  value={formData.derniereFacture}
-                  onChangeText={(text) => setFormData(prev => ({ ...prev, derniereFacture: text }))}
-                  placeholder="Montant de la dernière facture"
-                  keyboardType="numeric"
+                  value={formData.derniere_facture}
+                  onChangeText={(value) => updateFormField('derniere_facture', value)}
+                  placeholder="Ex: FACT-2024-001"
+                  placeholderTextColor="#4C4D5C"
                 />
               </View>
             </View>
@@ -574,18 +641,26 @@ const styles = StyleSheet.create({
   eyeButton: {
     padding: 4,
   },
-  pickerContainer: {
+  pickerButton: {
+    padding: 12,
     borderWidth: 1,
     borderColor: "#d1d5db",
     borderRadius: 8,
     backgroundColor: "#fff",
   },
-  pickerButton: {
-    padding: 12,
+  pickerContent: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+  },
+  pickerIcon: {
+    width: 20,
+    alignItems: "center",
   },
   pickerText: {
     color: "#374151",
     fontSize: 16,
+    flex: 1,
   },
   dateButton: {
     flexDirection: "row",

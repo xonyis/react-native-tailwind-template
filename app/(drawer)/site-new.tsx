@@ -129,10 +129,10 @@ export default function SiteNewScreen() {
         </Pressable>
         <BodyText style={styles.headerTitle}>Nouveau site</BodyText>
         <Pressable onPress={handleSave} style={styles.saveButton} disabled={saving}>
-          {saving ? (
-            <ActivityIndicator size="small" color="#2563eb" />
+        {saving ? (
+            <ActivityIndicator size="small" color="#fff" />
           ) : (
-            <Save size={20} color="#2563eb" />
+            <Save size={20} color="#fff" />
           )}
         </Pressable>
       </View>
