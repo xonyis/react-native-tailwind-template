@@ -3,13 +3,18 @@ import { makeAuthenticatedRequest } from './authApi';
 export interface ClientDetails {
   id: number;
   nom: string;
-  email: string;
-  telephone: string;
-  referenceClient: string | null;
-  adresseClient: string;
-  ville: string;
-  codePostal: string;
+  adresseEmail1: string | null;
+  adresseEmail2: string | null;
+  adresseClient: string | null;
+  ville: string | null;
+  codePostal: string | null;
   pays: string | null;
+  numeroTel1: string | null;
+  numeroTel2: string | null;
+  referenceClient: string | null;
+  typeClient: string | null;
+  visiteAnnuelle: string | null;
+  commentaire: string | null;
 }
 
 export interface Contrat {
@@ -18,6 +23,21 @@ export interface Contrat {
   date_expiration: string | null;
   type_contrat: string;
   statut: string;
+  commentaire: string | null;
+  nombreServPhysique: number;
+  nombreServVirtuel: number;
+  nombrePcFixe: number;
+  nombrePcPortable: number;
+  nombreUtilisateurClientLeger: number;
+  nombreRouter: number;
+  nombreTelemaintenanceAssistance: number;
+  securiteFirewall: number;
+  pointAccesWifiIndoor: number;
+  retentionSauvegarde: number;
+  forfaitSauvegardePoste: number;
+  cryptoprotect: boolean;
+  nombrePostesCryptoprotect: number;
+  antispamProtectionGold: number;
   client: string | null;
 }
 

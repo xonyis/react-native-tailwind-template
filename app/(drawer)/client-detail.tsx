@@ -8,12 +8,12 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import { ArrowLeft, Building, Calendar1, Edit, Mail, MapPin, Phone, Trash, User } from "lucide-react-native";
 import React, { useCallback, useEffect, useState } from "react";
 import {
-  ActivityIndicator,
-  Alert,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  View,
+    ActivityIndicator,
+    Alert,
+    Pressable,
+    ScrollView,
+    StyleSheet,
+    View,
 } from "react-native";
 
 export default function ClientDetailScreen() {
@@ -177,23 +177,27 @@ export default function ClientDetailScreen() {
         <View style={styles.section}>
           <Heading3 style={styles.sectionTitle}>Contact</Heading3>
           
-          <View style={styles.infoRow}>
-            <Mail size={20} color="#6b7280" />
-            <View style={styles.infoContent}>
-              <Caption style={styles.infoLabel}>Email</Caption>
-              <BodyText style={styles.infoValue}>{client.email}</BodyText>
+          {client.adresseEmail1 && (
+            <View style={styles.infoRow}>
+              <Mail size={20} color="#6b7280" />
+              <View style={styles.infoContent}>
+                <Caption style={styles.infoLabel}>Email 1</Caption>
+                <BodyText style={styles.infoValue}>{client.adresseEmail1}</BodyText>
+              </View>
             </View>
-          </View>
+          )}
 
-          <View style={styles.infoRow}>
-            <Phone size={20} color="#6b7280" />
-            <View style={styles.infoContent}>
-              <Caption style={styles.infoLabel}>Téléphone principal</Caption>
-              <BodyText style={styles.infoValue}>{client.telephone}</BodyText>
+          {client.adresseEmail2 && (
+            <View style={styles.infoRow}>
+              <Mail size={20} color="#6b7280" />
+              <View style={styles.infoContent}>
+                <Caption style={styles.infoLabel}>Email 2</Caption>
+                <BodyText style={styles.infoValue}>{client.adresseEmail2}</BodyText>
+              </View>
             </View>
-          </View>
+          )}
 
-          {client.numeroTel1 && client.numeroTel1 !== client.telephone && (
+          {client.numeroTel1 && (
             <View style={styles.infoRow}>
               <Phone size={20} color="#6b7280" />
               <View style={styles.infoContent}>
@@ -230,30 +234,40 @@ export default function ClientDetailScreen() {
           </View>
         </View>
 
-        {/* Informations entreprise */}
-        {(client.raisonSocial || client.siret || client.visiteAnnuelle) && (
+        {/* Informations client */}
+        {(client.referenceClient || client.typeClient || client.visiteAnnuelle || client.commentaire) && (
           <View style={styles.section}>
-            <Heading3 style={styles.sectionTitle}>Entreprise</Heading3>
+            <Heading3 style={styles.sectionTitle}>Informations client</Heading3>
             
-            {client.raisonSocial && (
+            {client.referenceClient && (
               <View style={styles.infoRow}>
                 <User size={20} color="#6b7280" />
                 <View style={styles.infoContent}>
-                  <Caption style={styles.infoLabel}>Raison sociale</Caption>
-                  <BodyText style={styles.infoValue}>{client.raisonSocial}</BodyText>
+                  <Caption style={styles.infoLabel}>Référence client</Caption>
+                  <BodyText style={styles.infoValue}>{client.referenceClient}</BodyText>
                 </View>
               </View>
             )}
 
-                         {client.siret && (
-                <View style={styles.infoRow}>
-                 <Building size={20} color="#6b7280" />
-                 <View style={styles.infoContent}>
-                   <Caption style={styles.infoLabel}>SIRET</Caption>
-                   <BodyText style={styles.infoValue}>{client.siret}</BodyText>
-                 </View>
-               </View>
-             )}
+            {client.typeClient && (
+              <View style={styles.infoRow}>
+                <Building size={20} color="#6b7280" />
+                <View style={styles.infoContent}>
+                  <Caption style={styles.infoLabel}>Type de client</Caption>
+                  <BodyText style={styles.infoValue}>{client.typeClient}</BodyText>
+                </View>
+              </View>
+            )}
+
+            {client.commentaire && (
+              <View style={styles.infoRow}>
+                <User size={20} color="#6b7280" />
+                <View style={styles.infoContent}>
+                  <Caption style={styles.infoLabel}>Commentaire</Caption>
+                  <BodyText style={styles.infoValue}>{client.commentaire}</BodyText>
+                </View>
+              </View>
+            )}
 
              {client.visiteAnnuelle && (
                 <View style={styles.infoRow}>

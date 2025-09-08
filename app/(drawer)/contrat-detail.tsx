@@ -5,7 +5,7 @@ import { useContratDetail } from '@/hooks/useContratDetail';
 import { contratsApi } from '@/services/contratsApi';
 import { DrawerActions, useNavigation } from '@react-navigation/native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { ArrowLeft, CalendarClock, Edit, FileText, Mail, MapPin, Phone, Signature, Trash } from 'lucide-react-native';
+import { ArrowLeft, CalendarClock, Edit, FileText, HardDrive, Lock, Mail, Mail as MailIcon, MapPin, Monitor, Phone, Server, Shield, Signature, Trash, Wifi } from 'lucide-react-native';
 import React from 'react';
 import { ActivityIndicator, Alert, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
@@ -231,21 +231,45 @@ export default function ContratDetailPage() {
             <View style={styles.section}>
               <Heading3 style={styles.sectionTitle}>Contact</Heading3>
               
-              <View style={styles.infoRow}>
-                <Mail size={20} color="#6b7280" />
-                <View style={styles.infoContent}>
-                  <Caption style={styles.infoLabel}>Email</Caption>
-                  <BodyText style={styles.infoValue}>{contrat.client.email}</BodyText>
+              {contrat.client.adresseEmail1 && (
+                <View style={styles.infoRow}>
+                  <Mail size={20} color="#6b7280" />
+                  <View style={styles.infoContent}>
+                    <Caption style={styles.infoLabel}>Email 1</Caption>
+                    <BodyText style={styles.infoValue}>{contrat.client.adresseEmail1}</BodyText>
+                  </View>
                 </View>
-              </View>
+              )}
 
-              <View style={styles.infoRow}>
-                <Phone size={20} color="#6b7280" />
-                <View style={styles.infoContent}>
-                  <Caption style={styles.infoLabel}>Téléphone</Caption>
-                  <BodyText style={styles.infoValue}>{contrat.client.telephone}</BodyText>
+              {contrat.client.adresseEmail2 && (
+                <View style={styles.infoRow}>
+                  <Mail size={20} color="#6b7280" />
+                  <View style={styles.infoContent}>
+                    <Caption style={styles.infoLabel}>Email 2</Caption>
+                    <BodyText style={styles.infoValue}>{contrat.client.adresseEmail2}</BodyText>
+                  </View>
                 </View>
-              </View>
+              )}
+
+              {contrat.client.numeroTel1 && (
+                <View style={styles.infoRow}>
+                  <Phone size={20} color="#6b7280" />
+                  <View style={styles.infoContent}>
+                    <Caption style={styles.infoLabel}>Téléphone 1</Caption>
+                    <BodyText style={styles.infoValue}>{contrat.client.numeroTel1}</BodyText>
+                  </View>
+                </View>
+              )}
+
+              {contrat.client.numeroTel2 && (
+                <View style={styles.infoRow}>
+                  <Phone size={20} color="#6b7280" />
+                  <View style={styles.infoContent}>
+                    <Caption style={styles.infoLabel}>Téléphone 2</Caption>
+                    <BodyText style={styles.infoValue}>{contrat.client.numeroTel2}</BodyText>
+                  </View>
+                </View>
+              )}
               <View style={styles.infoRow}>
                 <MapPin size={20} color="#6b7280" />
                 <View style={styles.infoContent}>
@@ -261,20 +285,188 @@ export default function ContratDetailPage() {
             </View>
 
             {/* Informations supplémentaires */}
-            {/* {contrat.client.referenceClient && (
+            {(contrat.client.referenceClient || contrat.client.typeClient || contrat.client.commentaire) && (
               <View style={styles.section}>
                 <Heading3 style={styles.sectionTitle}>Informations supplémentaires</Heading3>
                 
-                <View style={styles.infoRow}>
-                  <User size={20} color="#6b7280" />
-                  <View style={styles.infoContent}>
-                    <Caption style={styles.infoLabel}>Référence client</Caption>
-                    <BodyText style={styles.infoValue}>{contrat.client.referenceClient}</BodyText>
+                {contrat.client.referenceClient && (
+                  <View style={styles.infoRow}>
+                    <FileText size={20} color="#6b7280" />
+                    <View style={styles.infoContent}>
+                      <Caption style={styles.infoLabel}>Référence client</Caption>
+                      <BodyText style={styles.infoValue}>{contrat.client.referenceClient}</BodyText>
+                    </View>
                   </View>
-                </View>
+                )}
+
+                {contrat.client.typeClient && (
+                  <View style={styles.infoRow}>
+                    <FileText size={20} color="#6b7280" />
+                    <View style={styles.infoContent}>
+                      <Caption style={styles.infoLabel}>Type de client</Caption>
+                      <BodyText style={styles.infoValue}>{contrat.client.typeClient}</BodyText>
+                    </View>
+                  </View>
+                )}
+
+                {contrat.client.commentaire && (
+                  <View style={styles.infoRow}>
+                    <FileText size={20} color="#6b7280" />
+                    <View style={styles.infoContent}>
+                      <Caption style={styles.infoLabel}>Commentaire</Caption>
+                      <BodyText style={styles.infoValue}>{contrat.client.commentaire}</BodyText>
+                    </View>
+                  </View>
+                )}
               </View>
-            )} */}
+            )}
           </>
+        )}
+
+        {/* Matériel et systèmes */}
+        <View style={styles.section}>
+          <Heading3 style={styles.sectionTitle}>Matériel et systèmes</Heading3>
+          
+          {contrat.nombreServPhysique > 0 && (
+            <View style={styles.infoRow}>
+              <Server size={20} color="#6b7280" />
+              <View style={styles.infoContent}>
+                <Caption style={styles.infoLabel}>Serveurs physiques</Caption>
+                <BodyText style={styles.infoValue}>{contrat.nombreServPhysique}</BodyText>
+              </View>
+            </View>
+          )}
+
+          {contrat.nombreServVirtuel > 0 && (
+            <View style={styles.infoRow}>
+              <Server size={20} color="#6b7280" />
+              <View style={styles.infoContent}>
+                <Caption style={styles.infoLabel}>Serveurs virtuels</Caption>
+                <BodyText style={styles.infoValue}>{contrat.nombreServVirtuel}</BodyText>
+              </View>
+            </View>
+          )}
+
+          {contrat.nombrePcFixe > 0 && (
+            <View style={styles.infoRow}>
+              <Monitor size={20} color="#6b7280" />
+              <View style={styles.infoContent}>
+                <Caption style={styles.infoLabel}>PC fixes</Caption>
+                <BodyText style={styles.infoValue}>{contrat.nombrePcFixe}</BodyText>
+              </View>
+            </View>
+          )}
+
+          {contrat.nombrePcPortable > 0 && (
+            <View style={styles.infoRow}>
+              <Monitor size={20} color="#6b7280" />
+              <View style={styles.infoContent}>
+                <Caption style={styles.infoLabel}>PC portables</Caption>
+                <BodyText style={styles.infoValue}>{contrat.nombrePcPortable}</BodyText>
+              </View>
+            </View>
+          )}
+
+          {contrat.nombreUtilisateurClientLeger > 0 && (
+            <View style={styles.infoRow}>
+              <Monitor size={20} color="#6b7280" />
+              <View style={styles.infoContent}>
+                <Caption style={styles.infoLabel}>Utilisateurs client léger</Caption>
+                <BodyText style={styles.infoValue}>{contrat.nombreUtilisateurClientLeger}</BodyText>
+              </View>
+            </View>
+          )}
+
+          {contrat.nombreRouter > 0 && (
+            <View style={styles.infoRow}>
+              <Wifi size={20} color="#6b7280" />
+              <View style={styles.infoContent}>
+                <Caption style={styles.infoLabel}>Routeurs</Caption>
+                <BodyText style={styles.infoValue}>{contrat.nombreRouter}</BodyText>
+              </View>
+            </View>
+          )}
+
+          {contrat.nombreTelemaintenanceAssistance > 0 && (
+            <View style={styles.infoRow}>
+              <Phone size={20} color="#6b7280" />
+              <View style={styles.infoContent}>
+                <Caption style={styles.infoLabel}>Télémaintenance assistance</Caption>
+                <BodyText style={styles.infoValue}>{contrat.nombreTelemaintenanceAssistance}</BodyText>
+              </View>
+            </View>
+          )}
+
+          {contrat.securiteFirewall > 0 && (
+            <View style={styles.infoRow}>
+              <Shield size={20} color="#6b7280" />
+              <View style={styles.infoContent}>
+                <Caption style={styles.infoLabel}>Sécurité Firewall</Caption>
+                <BodyText style={styles.infoValue}>Boîtier firewall avec {contrat.securiteFirewall} utilisateurs</BodyText>
+              </View>
+            </View>
+          )}
+
+          {contrat.pointAccesWifiIndoor > 0 && (
+            <View style={styles.infoRow}>
+              <Wifi size={20} color="#6b7280" />
+              <View style={styles.infoContent}>
+                <Caption style={styles.infoLabel}>Points d'accès WiFi Indoor</Caption>
+                <BodyText style={styles.infoValue}>{contrat.pointAccesWifiIndoor}</BodyText>
+              </View>
+            </View>
+          )}
+
+          {contrat.retentionSauvegarde > 0 && (
+            <View style={styles.infoRow}>
+              <HardDrive size={20} color="#6b7280" />
+              <View style={styles.infoContent}>
+                <Caption style={styles.infoLabel}>Rétention sauvegarde</Caption>
+                <BodyText style={styles.infoValue}>{contrat.retentionSauvegarde} Go</BodyText>
+              </View>
+            </View>
+          )}
+
+          {contrat.forfaitSauvegardePoste > 0 && (
+            <View style={styles.infoRow}>
+              <HardDrive size={20} color="#6b7280" />
+              <View style={styles.infoContent}>
+                <Caption style={styles.infoLabel}>Forfait sauvegarde poste</Caption>
+                <BodyText style={styles.infoValue}>{contrat.forfaitSauvegardePoste} Go</BodyText>
+              </View>
+            </View>
+          )}
+
+          {contrat.cryptoprotect && (
+            <View style={styles.infoRow}>
+              <Lock size={20} color="#6b7280" />
+              <View style={styles.infoContent}>
+                <Caption style={styles.infoLabel}>Cryptoprotect</Caption>
+                <BodyText style={styles.infoValue}>Activé</BodyText>
+                {contrat.nombrePostesCryptoprotect > 0 && (
+                  <BodyText style={styles.infoValue}>{contrat.nombrePostesCryptoprotect} postes</BodyText>
+                )}
+              </View>
+            </View>
+          )}
+
+          {contrat.antispamProtectionGold > 0 && (
+            <View style={styles.infoRow}>
+              <MailIcon size={20} color="#6b7280" />
+              <View style={styles.infoContent}>
+                <Caption style={styles.infoLabel}>Antispam Protection Gold</Caption>
+                <BodyText style={styles.infoValue}>{contrat.antispamProtectionGold} pack(s) de 5 licences</BodyText>
+              </View>
+            </View>
+          )}
+        </View>
+
+        {/* Commentaire */}
+        {contrat.commentaire && (
+          <View style={styles.section}>
+            <Heading3 style={styles.sectionTitle}>Commentaire</Heading3>
+            <BodyText style={styles.commentText}>{contrat.commentaire}</BodyText>
+          </View>
         )}
 
         {/* Espace en bas */}
@@ -418,5 +610,11 @@ const styles = StyleSheet.create({
   buttonText: {
     color: "#fff",
     fontWeight: "600",
+  },
+  commentText: {
+    color: "#374151",
+    fontSize: 16,
+    lineHeight: 24,
+    fontStyle: 'italic',
   },
 });

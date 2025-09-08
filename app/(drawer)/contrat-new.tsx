@@ -9,15 +9,17 @@ import { useRouter } from "expo-router";
 import { ArrowLeft, Calendar, Save } from "lucide-react-native";
 import React, { useState } from "react";
 import {
-    ActivityIndicator,
-    Alert,
-    KeyboardAvoidingView,
-    Modal,
-    Platform,
-    Pressable,
-    ScrollView,
-    StyleSheet,
-    View,
+  ActivityIndicator,
+  Alert,
+  KeyboardAvoidingView,
+  Modal,
+  Platform,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Switch,
+  TextInput,
+  View
 } from "react-native";
 
 export default function ContratNewScreen() {
@@ -41,14 +43,58 @@ export default function ContratNewScreen() {
     date_signature: '',
     date_expiration: '',
     client_id: null as number | null,
+    commentaire: '',
+    nombreServPhysique: 0,
+    nombreServVirtuel: 0,
+    nombrePcFixe: 0,
+    nombrePcPortable: 0,
+    nombreUtilisateurClientLeger: 0,
+    nombreRouter: 0,
+    nombreTelemaintenanceAssistance: 0,
+    securiteFirewall: 0,
+    pointAccesWifiIndoor: 0,
+    retentionSauvegarde: 0,
+    forfaitSauvegardePoste: 0,
+    cryptoprotect: false,
+    nombrePostesCryptoprotect: 0,
+    antispamProtectionGold: 0,
   });
 
   // Trouver le client sélectionné
   const selectedClient = clients.find(client => client.id === formData.client_id);
 
   // Options pour les sélecteurs
-  const typeContratOptions = ['VIP', 'BLUE', 'HEBERGEMENT EVOLUCLOUD', 'OFFICE 365', 'SAGE', 'SAUVEGARDE', 'AUTRE'];
-  const statutOptions = ['En cours', 'Terminé', 'En attente'];
+  const typeContratOptions = [
+    { label: 'VIP', value: 'VIP' },
+    { label: 'BLUE', value: 'BLUE' },
+    { label: 'HEBERGEMENT EVOLUCLOUD', value: 'HEBERGEMENT EVOLUCLOUD' },
+    { label: 'OFFICE 365', value: 'OFFICE 365' },
+    { label: 'SAGE', value: 'SAGE' },
+    { label: 'SAUVEGARDE', value: 'SAUVEGARDE' },
+    { label: 'PRINT', value: 'PRINT' },
+    { label: 'AUTRE', value: 'AUTRE' },
+  ];
+
+  const statutOptions = [
+    { label: 'En cours', value: 'En cours' },
+    { label: 'Terminé', value: 'Termine' },
+  ];
+
+  const firewallOptions = [
+    { label: 'Aucun', value: 0 },
+    { label: 'Boîtier firewall avec 5 utilisateurs', value: 5 },
+    { label: 'Boîtier firewall avec 15 utilisateurs', value: 15 },
+  ];
+
+  const retentionOptions = [
+    { label: 'Aucune sauvegarde', value: 0 },
+    { label: '150 Go', value: 150 },
+    { label: '300 Go', value: 300 },
+    { label: '600 Go', value: 600 },
+    { label: '1 To', value: 1000 },
+    { label: '1.5 To', value: 1500 },
+    { label: '2 To', value: 2000 },
+  ];
 
   const handleGoBack = () => {
     router.push("/(drawer)/contrats");
@@ -90,7 +136,22 @@ export default function ContratNewScreen() {
         date_signature: formatDateForAPI(formData.date_signature),
         date_expiration: formatDateForAPI(formData.date_expiration),
         client_id: formData.client_id,
-      } as any; // Type assertion pour contourner le problème de type
+        commentaire: formData.commentaire.trim() || null,
+        nombreServPhysique: formData.nombreServPhysique,
+        nombreServVirtuel: formData.nombreServVirtuel,
+        nombrePcFixe: formData.nombrePcFixe,
+        nombrePcPortable: formData.nombrePcPortable,
+        nombreUtilisateurClientLeger: formData.nombreUtilisateurClientLeger,
+        nombreRouter: formData.nombreRouter,
+        nombreTelemaintenanceAssistance: formData.nombreTelemaintenanceAssistance,
+        securiteFirewall: formData.securiteFirewall,
+        pointAccesWifiIndoor: formData.pointAccesWifiIndoor,
+        retentionSauvegarde: formData.retentionSauvegarde,
+        forfaitSauvegardePoste: formData.forfaitSauvegardePoste,
+        cryptoprotect: formData.cryptoprotect,
+        nombrePostesCryptoprotect: formData.nombrePostesCryptoprotect,
+        antispamProtectionGold: formData.antispamProtectionGold,
+      } as any;
 
       console.log('Données envoyées à l\'API:', createData);
       
@@ -211,6 +272,55 @@ export default function ContratNewScreen() {
     );
   };
 
+  const showPicker = (title: string, options: any[], currentValue: any, onSelect: (value: any) => void) => {
+    Alert.alert(
+      title,
+      'Sélectionnez une option',
+      [
+        {
+          text: 'Annuler',
+          style: 'cancel',
+        },
+        ...options.map(option => ({
+          text: option.label,
+          onPress: () => onSelect(option.value)
+        }))
+      ]
+    );
+  };
+
+  const updateFormField = (field: keyof typeof formData, value: any) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+  };
+
+  const renderNumberInput = (label: string, field: keyof typeof formData, placeholder: string, help?: string) => (
+    <View style={styles.inputGroup}>
+      <Caption style={styles.label}>{label}</Caption>
+      <TextInput
+        style={styles.numberInput}
+        value={formData[field].toString()}
+        onChangeText={(value) => updateFormField(field, parseInt(value) || 0)}
+        placeholder={placeholder}
+        keyboardType="numeric"
+      />
+      {help && <Caption style={styles.helpText}>{help}</Caption>}
+    </View>
+  );
+
+  const renderPicker = (label: string, field: keyof typeof formData, options: any[], currentValue: any) => (
+    <View style={styles.inputGroup}>
+      <Caption style={styles.label}>{label}</Caption>
+      <Pressable
+        style={styles.pickerButton}
+        onPress={() => showPicker(label, options, currentValue, (value) => updateFormField(field, value))}
+      >
+        <BodyText style={styles.pickerText}>
+          {options.find(opt => opt.value === currentValue)?.label || 'Sélectionner une option'}
+        </BodyText>
+      </Pressable>
+    </View>
+  );
+
   return (
     <View style={styles.container}>
       {/* Header */}
@@ -240,71 +350,27 @@ export default function ContratNewScreen() {
             {/* Client */}
             <View style={styles.inputGroup}>
               <Caption style={styles.label}>Client *</Caption>
-              <View style={styles.pickerContainer}>
-                <Pressable
-                  style={styles.pickerButton}
-                  onPress={handleSelectClient}
-                  disabled={clientsLoading}
-                >
-                  <BodyText style={styles.pickerText}>
-                    {clientsLoading 
-                                              ? 'Chargement des clients...' 
-                        : selectedClient 
-                          ? selectedClient.nom
-                          : 'Sélectionner un client'
-                    }
-                  </BodyText> 
-                </Pressable>
-              </View>
+              <Pressable
+                style={styles.pickerButton}
+                onPress={handleSelectClient}
+                disabled={clientsLoading}
+              >
+                <BodyText style={styles.pickerText}>
+                  {clientsLoading 
+                    ? 'Chargement des clients...' 
+                    : selectedClient 
+                      ? selectedClient.nom
+                      : 'Sélectionner un client'
+                  }
+                </BodyText> 
+              </Pressable>
             </View>
 
             {/* Type de contrat */}
-            <View style={styles.inputGroup}>
-              <Caption style={styles.label}>Type de contrat *</Caption>
-              <View style={styles.pickerContainer}>
-                <Pressable
-                  style={styles.pickerButton}
-                  onPress={() => {
-                    Alert.alert(
-                      'Type de contrat',
-                      'Sélectionnez le type de contrat',
-                      typeContratOptions.map(option => ({
-                        text: option,
-                        onPress: () => setFormData(prev => ({ ...prev, type_contrat: option }))
-                      }))
-                    );
-                  }}
-                >
-                  <BodyText style={styles.pickerText}>
-                    {formData.type_contrat || 'Sélectionner un type'}
-                  </BodyText>
-                </Pressable>
-              </View>
-            </View>
+            {renderPicker('Type de contrat *', 'type_contrat', typeContratOptions, formData.type_contrat)}
 
             {/* Statut */}
-            <View style={styles.inputGroup}>
-              <Caption style={styles.label}>Statut *</Caption>
-              <View style={styles.pickerContainer}>
-                <Pressable
-                  style={styles.pickerButton}
-                  onPress={() => {
-                    Alert.alert(
-                      'Statut',
-                      'Sélectionnez le statut',
-                      statutOptions.map(option => ({
-                        text: option,
-                        onPress: () => setFormData(prev => ({ ...prev, statut: option }))
-                      }))
-                    );
-                  }}
-                >
-                  <BodyText style={styles.pickerText}>
-                    {formData.statut || 'Sélectionner un statut'}
-                  </BodyText>
-                </Pressable>
-              </View>
-            </View>
+            {renderPicker('Statut *', 'statut', statutOptions, formData.statut)}
 
             {/* Date de signature */}
             <View style={styles.inputGroup}>
@@ -339,12 +405,159 @@ export default function ContratNewScreen() {
                 </BodyText>
               </Pressable>
             </View>
+
+            {/* Commentaire */}
+            <View style={styles.inputGroup}>
+              <Caption style={styles.label}>Commentaire</Caption>
+              <TextInput
+                style={[styles.textInput, styles.textArea]}
+                value={formData.commentaire}
+                onChangeText={(value) => updateFormField('commentaire', value)}
+                placeholder="Ajoutez un commentaire sur ce contrat..."
+                multiline={true}
+                numberOfLines={4}
+                textAlignVertical="top"
+              />
+            </View>
           </View>
+
+          {/* Matériel et systèmes */}
+          <View style={styles.section}>
+            <Heading2 style={styles.sectionTitle}>Matériel et systèmes</Heading2>
+            
+            {renderNumberInput(
+              'Nombre de serveurs physiques et supervision',
+              'nombreServPhysique',
+              '0 = aucun serveur physique',
+              '0 = aucun serveur physique, ≥1 = nombre de serveurs physiques inclus'
+            )}
+
+            {renderNumberInput(
+              'Nombre de serveurs virtuels et supervision',
+              'nombreServVirtuel',
+              '0 = aucun serveur virtuel',
+              '0 = aucun serveur virtuel, ≥1 = nombre de serveurs virtuels inclus'
+            )}
+
+            {renderNumberInput(
+              "Nombre de PC fixe avec écran jusqu'à 27''",
+              'nombrePcFixe',
+              '0 = aucun PC fixe',
+              '0 = aucun PC fixe, ≥1 = nombre de PC fixe inclus'
+            )}
+
+            {renderNumberInput(
+              'Nombre de PC portables',
+              'nombrePcPortable',
+              '0 = aucun PC portable',
+              '0 = aucun PC portable, ≥1 = nombre de PC portables inclus'
+            )}
+
+            {renderNumberInput(
+              "Nombre d'utilisateurs client léger",
+              'nombreUtilisateurClientLeger',
+              '0 = aucun utilisateur client léger',
+              "0 = aucun utilisateur client léger, ≥1 = nombre d'utilisateurs client léger inclus"
+            )}
+
+            {renderNumberInput(
+              'Nombre de routeurs',
+              'nombreRouter',
+              '0 = aucun routeur',
+              '0 = aucun routeur, ≥1 = nombre de routeurs inclus'
+            )}
+
+            {renderNumberInput(
+              'Télémaintenance: assistance',
+              'nombreTelemaintenanceAssistance',
+              '0 = aucune télémaintenance',
+              "0 = aucune télémaintenance, ≥1 = nombre d'assistances télémaintenance incluses"
+            )}
+
+          </View>
+
+          {/* Matériel et systèmes */}
+          <View style={styles.section}>
+            <Heading2 style={styles.sectionTitle}>Sécurité et FireWall</Heading2>
+
+            {renderPicker(
+              'Sécurité FireWall',
+              'securiteFirewall',
+              firewallOptions,
+              formData.securiteFirewall
+            )}
+
+            {renderNumberInput(
+              "Point d'accès WiFi Indoor",
+              'pointAccesWifiIndoor',
+              '0 = aucun point d\'accès WiFi',
+              "0 = aucun point d'accès WiFi, ≥1 = nombre de points d'accès WiFi Indoor inclus"
+            )}
+          </View>
+
+          {/* Cryptoprotect */}
+          <View style={styles.section}>
+            <Heading2 style={styles.sectionTitle}>Cryptoprotect et Antispam</Heading2>
+
+            <View style={styles.inputGroup}>
+              <Caption style={styles.label}>Cryptoprotect</Caption>
+              <View style={styles.switchContainer}>
+                <Switch
+                  value={formData.cryptoprotect}
+                  onValueChange={(value) => updateFormField('cryptoprotect', value)}
+                  trackColor={{ false: '#d1d5db', true: '#2563eb' }}
+                  thumbColor={formData.cryptoprotect ? '#fff' : '#f4f3f4'}
+                />
+                <BodyText style={styles.switchLabel}>
+                  {formData.cryptoprotect ? 'Activé' : 'Désactivé'}
+                </BodyText>
+              </View>
+              <Caption style={styles.helpText}>Cochez pour activer Cryptoprotect</Caption>
+            </View>
+
+            {formData.cryptoprotect && renderNumberInput(
+              'Nombre de postes (Cryptoprotect)',
+              'nombrePostesCryptoprotect',
+              '0 = aucun poste',
+              '0 = aucun poste, ≥1 = nombre de postes pour Cryptoprotect'
+            )}
+
+            {renderNumberInput(
+              'Antispam - Protection Gold (pack de 5 licences)',
+              'antispamProtectionGold',
+              '0 = aucun pack antispam',
+              '0 = aucun pack, ≥1 = nombre de packs de 5 licences Mail in Black'
+            )}
+          </View>
+
+          {/* Sauvegarde Serveur */}
+          <View style={styles.section}>
+            <Heading2 style={styles.sectionTitle}>Sauvegarde Serveur</Heading2>
+            {renderPicker(
+              'Rétention 15 jours + 3 points mensuels',
+              'retentionSauvegarde',
+              retentionOptions,
+              formData.retentionSauvegarde
+            )}
+          </View>
+
+          {/* Sauvegarde Poste de Travail */}
+          <View style={styles.section}>
+            <Heading2 style={styles.sectionTitle}>Sauvegarde Poste de Travail</Heading2>
+            {renderNumberInput(
+              'Forfait Sauvegarde de Poste (Go)',
+              'forfaitSauvegardePoste',
+              '0 = aucun forfait sauvegarde',
+              '0 = aucun forfait sauvegarde, ≥1 = taille en Go pour la sauvegarde de poste'
+            )}
+          </View>
+          
 
           {/* Espace en bas */}
           <View style={{ height: 120 }} />
         </ScrollView>
       </KeyboardAvoidingView>
+      
 
       {/* Modal pour le sélecteur de date de signature */}
       {Platform.OS === 'ios' ? (
@@ -511,14 +724,12 @@ const styles = StyleSheet.create({
     marginBottom: 8,
     fontWeight: "500",
   },
-  pickerContainer: {
+  pickerButton: {
+    padding: 12,
     borderWidth: 1,
     borderColor: "#d1d5db",
     borderRadius: 8,
     backgroundColor: "#fff",
-  },
-  pickerButton: {
-    padding: 12,
   },
   pickerText: {
     color: "#374151",
@@ -535,6 +746,46 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   dateText: {
+    color: "#374151",
+    fontSize: 16,
+  },
+  textInput: {
+    borderWidth: 1,
+    borderColor: "#d1d5db",
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 12,
+    fontSize: 16,
+    color: "#1f2937",
+    backgroundColor: "#fff",
+  },
+  numberInput: {
+    borderWidth: 1,
+    borderColor: "#d1d5db",
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 12,
+    fontSize: 16,
+    color: "#1f2937",
+    backgroundColor: "#fff",
+  },
+  textArea: {
+    height: 100,
+    textAlignVertical: 'top',
+  },
+  helpText: {
+    color: "#6b7280",
+    fontSize: 12,
+    marginTop: 4,
+    fontStyle: 'italic',
+  },
+  switchContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    paddingVertical: 8,
+  },
+  switchLabel: {
     color: "#374151",
     fontSize: 16,
   },

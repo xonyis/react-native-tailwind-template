@@ -6,7 +6,7 @@ import { servicesWebApi } from "@/services/servicesWebApi";
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { DrawerActions, useNavigation } from "@react-navigation/native";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { ArrowLeft, Calendar, ChevronDown, Globe, Save } from "lucide-react-native";
+import { ArrowLeft, Calendar, Globe, Save } from "lucide-react-native";
 import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
@@ -38,7 +38,7 @@ export default function HebergementEditScreen() {
   const [selectedRappelDate, setSelectedRappelDate] = useState(new Date());
   const [tempSelectedRenouvellementDate, setTempSelectedRenouvellementDate] = useState(new Date());
   const [tempSelectedRappelDate, setTempSelectedRappelDate] = useState(new Date());
-  const [showTypePicker, setShowTypePicker] = useState(false);
+
 
   const typeHebergementOptions = [
     { label: 'OVH', value: 'OVH' },
@@ -260,20 +260,39 @@ export default function HebergementEditScreen() {
             <Heading2 style={styles.sectionTitle}>Informations de base</Heading2>
             
             {/* Type d'hébergement */}
-                            <View style={styles.inputGroup}>
-                  <Caption style={styles.label}>Type d&apos;hébergement *</Caption>
-                  <View style={styles.inputContainerr}>
-                    <Pressable
-                      style={styles.selectContainer}
-                      onPress={() => setShowTypePicker(true)}
-                    >
-                      <BodyText style={[styles.selectText, !formData.typeHebergement && styles.placeholderText]}>
-                        {formData.typeHebergement || "Sélectionner le type d'hébergement"}
-                      </BodyText>
-                      <ChevronDown size={20} color="#6b7280" />
-                    </Pressable>
-                  </View>
-                </View>
+            <View style={styles.inputGroup}>
+              <Caption style={styles.label}>Type d&apos;hébergement *</Caption>
+              <View style={styles.pickerContainer}>
+                <Pressable
+                  style={styles.pickerButton}
+                  onPress={() => {
+                    Alert.alert(
+                      'Type d\'hébergement',
+                      'Sélectionnez le type d\'hébergement',
+                      [
+                        {
+                          text: 'Annuler',
+                          style: 'cancel',
+                        },
+                        ...typeHebergementOptions.map(option => ({
+                          text: option.label,
+                          onPress: () => {
+                            setFormData(prev => ({
+                              ...prev,
+                              typeHebergement: option.value
+                            }));
+                          },
+                        }))
+                      ]
+                    );
+                  }}
+                >
+                  <BodyText style={styles.pickerText}>
+                    {formData.typeHebergement || 'Sélectionner le type d\'hébergement'}
+                  </BodyText>
+                </Pressable>
+              </View>
+            </View>
 
             {/* Nom de domaine inclus */}
             <View style={styles.inputGroup}>
@@ -492,48 +511,7 @@ export default function HebergementEditScreen() {
         )
       )}
 
-      {/* Modal pour le sélecteur de type d'hébergement */}
-      <Modal
-        animationType="slide"
-        transparent={false}
-        visible={showTypePicker}
-        onRequestClose={() => setShowTypePicker(false)}
-        presentationStyle="pageSheet"
-      >
-        <View style={styles.actionSheetContainer}>
-          <View style={styles.actionSheetHeader}>
-            <BodyText style={styles.actionSheetTitle}>Type d&apos;hébergement</BodyText>
-            <Pressable
-              onPress={() => setShowTypePicker(false)}
-              style={styles.actionSheetCancelButton}
-            >
-              <BodyText style={styles.actionSheetCancelText}>Annuler</BodyText>
-            </Pressable>
-          </View>
-          <View style={styles.actionSheetContent}>
-            {typeHebergementOptions.map((option) => (
-              <Pressable
-                key={option.value}
-                style={styles.actionSheetOption}
-                onPress={() => {
-                  setFormData(prev => ({ ...prev, typeHebergement: option.value }));
-                  setShowTypePicker(false);
-                }}
-              >
-                <BodyText style={[
-                  styles.actionSheetOptionText,
-                  formData.typeHebergement === option.value && styles.actionSheetSelectedOption
-                ]}>
-                  {option.label}
-                </BodyText>
-                {formData.typeHebergement === option.value && (
-                  <BodyText style={styles.actionSheetCheckmark}>✓</BodyText>
-                )}
-              </Pressable>
-            ))}
-          </View>
-        </View>
-      </Modal>
+
 
       <FAB onPress={() => navigation.dispatch(DrawerActions.openDrawer())} />
     </View>
@@ -850,6 +828,19 @@ const styles = StyleSheet.create({
       fontSize: 16,
       color: '#2563eb',
       fontWeight: 'bold',
+    },
+    pickerContainer: {
+      borderWidth: 1,
+      borderColor: "#d1d5db",
+      borderRadius: 8,
+      backgroundColor: "#fff",
+    },
+    pickerButton: {
+      padding: 12,
+    },
+    pickerText: {
+      color: "#374151",
+      fontSize: 16,
     },
   });
 

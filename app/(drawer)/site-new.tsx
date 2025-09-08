@@ -4,19 +4,18 @@ import { useAuth } from "@/context/AuthContext";
 import { servicesWebApi } from "@/services/servicesWebApi";
 import { DrawerActions, useNavigation } from "@react-navigation/native";
 import { useRouter } from "expo-router";
-import { ArrowLeft, ChevronDown, Eye, EyeOff, Globe, Save, User, UserLock } from "lucide-react-native";
+import { ArrowLeft, Eye, EyeOff, Globe, Save, User, UserLock } from "lucide-react-native";
 import React, { useState } from "react";
 import {
   ActivityIndicator,
   Alert,
   KeyboardAvoidingView,
-  Modal,
   Platform,
   Pressable,
   ScrollView,
   StyleSheet,
   TextInput,
-  View,
+  View
 } from "react-native";
 
 export default function SiteNewScreen() {
@@ -26,7 +25,7 @@ export default function SiteNewScreen() {
 
   const [saving, setSaving] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const [showClientPicker, setShowClientPicker] = useState(false);
+
   const [loadingClients, setLoadingClients] = useState(false);
   const [clients, setClients] = useState<any[]>([]);
 
@@ -146,20 +145,42 @@ export default function SiteNewScreen() {
             {/* Client */}
             <View style={styles.inputGroup}>
               <Caption style={styles.label}>Client *</Caption>
-              <View style={styles.inputContainer}>
-                <User size={20} color="#6b7280" />
+              <View style={styles.pickerContainer}>
                 <Pressable
-                  style={styles.selectContainer}
-                  onPress={() => setShowClientPicker(true)}
-                  disabled={loadingClients}
+                  style={styles.pickerButton}
+                  onPress={() => {
+                    if (loadingClients) {
+                      Alert.alert('Chargement', 'Veuillez attendre le chargement des clients');
+                      return;
+                    }
+                    
+                    Alert.alert(
+                      'Sélectionner un client',
+                      'Choisissez un client dans la liste',
+                      [
+                        {
+                          text: 'Annuler',
+                          style: 'cancel',
+                        },
+                        ...clients.map(client => ({
+                          text: client.nom,
+                          onPress: () => {
+                            setFormData(prev => ({
+                              ...prev,
+                              clientId: client.id
+                            }));
+                          },
+                        }))
+                      ]
+                    );
+                  }}
                 >
-                  <BodyText style={[styles.selectText, !formData.clientId && styles.placeholderText]}>
-                    {loadingClients ? "Chargement..." : 
-                     formData.clientId ? 
-                       getSelectedClientName() || "Client sélectionné" :
-                       "Sélectionner un client"}
+                  <BodyText style={styles.pickerText}>
+                    {(() => {
+                      const selectedClient = clients.find(c => c.id === formData.clientId);
+                      return selectedClient ? selectedClient.nom : 'Sélectionner un client';
+                    })()}
                   </BodyText>
-                  <ChevronDown size={20} color="#6b7280" />
                 </Pressable>
               </View>
             </View>
@@ -241,42 +262,7 @@ export default function SiteNewScreen() {
         </ScrollView>
       </KeyboardAvoidingView>
 
-      {/* Modal pour le sélecteur de client */}
-      <Modal
-        animationType="fade"
-        transparent={true}
-        visible={showClientPicker}
-        onRequestClose={() => setShowClientPicker(false)}
-      >
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <View style={styles.modalHeader}>
-              <BodyText style={styles.modalTitle}>Sélectionner un client</BodyText>
-              <BodyText style={styles.modalSubtitle}>Choisissez un client pour le site</BodyText>
-            </View>
-            <View style={styles.modalOptions}>
-              {loadingClients ? (
-                <BodyText style={styles.modalOptionText}>Chargement des clients...</BodyText>
-              ) : clients.length === 0 ? (
-                <BodyText style={styles.modalOptionText}>Aucun client trouvé.</BodyText>
-              ) : (
-                clients.map((client) => (
-                  <Pressable
-                    key={client.id}
-                    style={styles.modalOption}
-                    onPress={() => {
-                      setFormData(prev => ({ ...prev, clientId: client.id }));
-                      setShowClientPicker(false);
-                    }}
-                  >
-                    <BodyText style={styles.modalOptionText}>{client.nom}</BodyText>
-                  </Pressable>
-                ))
-              )}
-            </View>
-          </View>
-        </View>
-      </Modal>
+
 
       <FAB onPress={() => navigation.dispatch(DrawerActions.openDrawer())} />
     </View>
@@ -427,5 +413,18 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#374151',
     textAlign: 'center',
+  },
+  pickerContainer: {
+    borderWidth: 1,
+    borderColor: "#d1d5db",
+    borderRadius: 8,
+    backgroundColor: "#fff",
+  },
+  pickerButton: {
+    padding: 12,
+  },
+  pickerText: {
+    color: "#374151",
+    fontSize: 16,
   },
 });

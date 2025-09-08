@@ -1,6 +1,6 @@
 import { BodyText, Caption, Heading3 } from '@/components/CustomText';
 import { type Materiel } from '@/services/materielsApi';
-import { Calendar, Edit, Eye, Package, PackageOpen, User } from 'lucide-react-native';
+import { AlertTriangle, Calendar, Edit, Eye, Package, PackageOpen, User } from 'lucide-react-native';
 import React from 'react';
 import { Pressable, StyleSheet, TouchableOpacity, View } from 'react-native';
 
@@ -53,8 +53,14 @@ export function MaterielList({
               <Heading3 style={styles.compactTitle}>{materiel.nom}</Heading3>
             </View>
             <Caption style={styles.compactSubtitle}>
-              {materiel.reference} • {materiel.type_materiel}
+              {materiel.reference || 'Sans référence'} • {materiel.type_materiel}
             </Caption>
+            {materiel.is_obsolete && (
+              <View style={styles.obsoleteBadge}>
+                <AlertTriangle size={12} color="#ef4444" />
+                <Caption style={styles.obsoleteText}>Obsolète</Caption>
+              </View>
+            )}
           </Pressable>
         ))}
       </View>
@@ -71,13 +77,21 @@ export function MaterielList({
                 <Package size={20} color="#1f2937" />
                 <Heading3 style={styles.title}>{materiel.nom}</Heading3>
               </View>
-              <BodyText style={styles.reference}>Réf: {materiel.reference}</BodyText>
+              <BodyText style={styles.reference}>Réf: {materiel.reference || 'Sans référence'}</BodyText>
               <BodyText style={styles.type}>Type: {materiel.type_materiel}</BodyText>
-              {materiel.etat && (
-                <View style={[styles.etatBadge, { backgroundColor: getEtatColor(materiel.etat) + '20' }]}>
-                  <BodyText style={[styles.etatText, { color: getEtatColor(materiel.etat) }]}>{materiel.etat}</BodyText>
-                </View>
-              )}
+              <View style={styles.badgesRow}>
+                {materiel.etat && (
+                  <View style={[styles.etatBadge, { backgroundColor: getEtatColor(materiel.etat) + '20' }]}>
+                    <BodyText style={[styles.etatText, { color: getEtatColor(materiel.etat) }]}>{materiel.etat}</BodyText>
+                  </View>
+                )}
+                {materiel.is_obsolete && (
+                  <View style={styles.obsoleteBadge}>
+                    <AlertTriangle size={12} color="#ef4444" />
+                    <BodyText style={styles.obsoleteText}>Obsolète</BodyText>
+                  </View>
+                )}
+              </View>
             </View>
           </View>
           
@@ -229,15 +243,35 @@ const styles = StyleSheet.create({
     color: '#6b7280',
     marginLeft: 24,
   },
+  badgesRow: {
+    flexDirection: 'row',
+    gap: 8,
+    flexWrap: 'wrap',
+    marginTop: 4,
+  },
   etatBadge: {
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 12,
     alignSelf: 'flex-start',
-    marginTop: 4,
   },
   etatText: {
     fontSize: 12,
     fontWeight: '600',
+  },
+  obsoleteBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+    backgroundColor: '#ef444420',
+    alignSelf: 'flex-start',
+  },
+  obsoleteText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#ef4444',
   },
 });

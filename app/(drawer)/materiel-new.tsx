@@ -6,7 +6,7 @@ import { materielsApi } from "@/services/materielsApi";
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { DrawerActions, useNavigation } from "@react-navigation/native";
 import { useRouter } from "expo-router";
-import { ArrowLeft, Calendar, Package, Save } from "lucide-react-native";
+import { ArrowLeft, Calendar, Save } from "lucide-react-native";
 import React, { useState } from "react";
 import {
     ActivityIndicator,
@@ -17,8 +17,9 @@ import {
     Pressable,
     ScrollView,
     StyleSheet,
+    Switch,
     TextInput,
-    View,
+    View
 } from "react-native";
 
 export default function MaterielNewScreen() {
@@ -29,18 +30,26 @@ export default function MaterielNewScreen() {
   
   const [saving, setSaving] = useState(false);
   const [showAchatDatePicker, setShowAchatDatePicker] = useState(false);
+  const [showCommandeDatePicker, setShowCommandeDatePicker] = useState(false);
   const [selectedAchatDate, setSelectedAchatDate] = useState(new Date());
+  const [selectedCommandeDate, setSelectedCommandeDate] = useState(new Date());
   const [tempSelectedAchatDate, setTempSelectedAchatDate] = useState(new Date());
+  const [tempSelectedCommandeDate, setTempSelectedCommandeDate] = useState(new Date());
   
   // États pour les champs du formulaire
   const [formData, setFormData] = useState({
     nom: '',
     reference: '',
-    type_materiel: '',
     etat: '',
+    type_materiel: '',
     date_achat: '',
-    quantite_total: '1',
+    date_commande_fournisseur: '',
+    nom_fournisseur: '',
+    quantite_total: 1,
     client_id: null as number | null,
+    os: '',
+    commentaire: '',
+    is_obsolete: false,
   });
 
   // Trouver le client sélectionné
@@ -48,43 +57,60 @@ export default function MaterielNewScreen() {
 
   // Options pour les sélecteurs
   const typeMaterielOptions = [
-    'PC PORTABLE',
-    'ORDINATEUR DE BUREAU',
-    'ONDULEUR',
-    'SWITCH',
-    'BARETTE DE RAM',
-    'TAMBOUR IMPRIMANTE',
-    'TONER IMPRIMANTE',
-    'CARTOUCHE',
-    'IMPRIMANTE',
-    'SCANNER',
-    'SOURIS SANS FIL',
-    'CLAVIER SANS FIL',
-    'CLAVIER + SOURIS SANS FIL',
-    'STOCKAGE SAN/NAS',
-    'NAS',
-    'HDD',
-    'LECTEUR DVD',
-    'SOLUTION DE SECURITE',
-    'BARRE DE SON',
-    'ENSEMBLE CLAVIER ET SOURIS',
-    'ECRAN LED',
-    'ECRAN LCD',
-    'SSD',
-    'CHANGEMENT DE DALLE',
-    'SUPPORT ECRAN PC',
-    'WEBCAM',
-    'TV',
-    'CABLE',
-    'ADAPTEUR',
-    'BRAS ECRAN',
-    'TABLET A STYLET',
-    'COMUTATEUR',
-    'BORNE WIFI',
-    'CASQUE AUDIO',
-    'ACCESSOIRES'
+    { label: 'PC PORTABLE', value: 'PC PORTABLE' },
+    { label: 'ORDINATEUR DE BUREAU', value: 'ORDINATEUR DE BUREAU' },
+    { label: 'ONDULEUR', value: 'ONDULEUR' },
+    { label: 'SWITCH', value: 'SWITCH' },
+    { label: 'BARETTE DE RAM', value: 'BARETTE DE RAM' },
+    { label: 'TAMBOUR IMPRIMANTE', value: 'TAMBOUR IMPRIMANTE' },
+    { label: 'TONER IMPRIMANTE', value: 'TONER IMPRIMANTE' },
+    { label: 'CARTOUCHE', value: 'CARTOUCHE' },
+    { label: 'IMPRIMANTE', value: 'IMPRIMANTE' },
+    { label: 'SCANNER', value: 'SCANNER' },
+    { label: 'SOURIS SANS FIL', value: 'SOURIS SANS FIL' },
+    { label: 'CLAVIER SANS FIL', value: 'CLAVIER SANS FIL' },
+    { label: 'CLAVIER + SOURIS SANS FIL', value: 'CLAVIER + SOURIS SANS FIL' },
+    { label: 'STOCKAGE SAN/NAS', value: 'STOCKAGE SAN/NAS' },
+    { label: 'NAS', value: 'NAS' },
+    { label: 'HDD', value: 'HDD' },
+    { label: 'LECTEUR DVD', value: 'LECTEUR DVD' },
+    { label: 'SOLUTION DE SECURITE', value: 'SOLUTION DE SECURITE' },
+    { label: 'BARRE DE SON', value: 'BARRE DE SON' },
+    { label: 'ENSEMBLE CLAVIER ET SOURIS', value: 'ENSEMBLE CLAVIER ET SOURIS' },
+    { label: 'ECRAN LED', value: 'ECRAN LED' },
+    { label: 'ECRAN LCD', value: 'ECRAN LCD' },
+    { label: 'SSD', value: 'SSD' },
+    { label: 'CHANGEMENT DE DALLE', value: 'CHANGEMENT DE DALLE' },
+    { label: 'SUPPORT ECRAN PC', value: 'SUPPORT ECRAN PC' },
+    { label: 'WEBCAM', value: 'WEBCAM' },
+    { label: 'TV', value: 'TV' },
+    { label: 'CABLE', value: 'CABLE' },
+    { label: 'ADAPTEUR', value: 'ADAPTEUR' },
+    { label: 'BRAS ECRAN', value: 'BRAS ECRAN' },
+    { label: 'TABLET A STYLET', value: 'TABLET A STYLET' },
+    { label: 'COMUTATEUR', value: 'COMUTATEUR' },
+    { label: 'BORNE WIFI', value: 'BORNE WIFI' },
+    { label: 'CASQUE AUDIO', value: 'CASQUE AUDIO' },
+    { label: 'ACCESSOIRES', value: 'ACCESSOIRES' },
+    { label: 'AUTRE', value: 'AUTRE' },
   ];
-  const etatOptions = ['Neuf', 'Excellent', 'Bon', 'Moyen', 'Mauvais', 'Défectueux'];
+
+  const etatOptions = [
+    { label: 'Neuf', value: 'Neuf' },
+    { label: 'Excellent', value: 'Excellent' },
+    { label: 'Bon', value: 'Bon' },
+    { label: 'Moyen', value: 'Moyen' },
+    { label: 'Mauvais', value: 'Mauvais' },
+    { label: 'Défectueux', value: 'Défectueux' },
+  ];
+
+  const osOptions = [
+    { label: 'Windows 7', value: 'Windows 7' },
+    { label: 'Windows 10', value: 'Windows 10' },
+    { label: 'Windows 11', value: 'Windows 11' },
+    { label: 'macOS', value: 'macOS' },
+    { label: 'Autre', value: 'Autre' },
+  ];
 
   const handleGoBack = () => {
     router.push("/(drawer)/materiel");
@@ -106,19 +132,13 @@ export default function MaterielNewScreen() {
     if (!token) return;
 
     // Validation simple
-    if (!formData.nom.trim() || !formData.reference.trim() || !formData.type_materiel.trim()) {
-      Alert.alert("Erreur", "Le nom, la référence et le type sont obligatoires");
+    if (!formData.nom.trim() || !formData.type_materiel.trim()) {
+      Alert.alert("Erreur", "Le nom et le type de matériel sont obligatoires");
       return;
     }
 
     if (!formData.client_id) {
       Alert.alert("Erreur", "Veuillez sélectionner un client");
-      return;
-    }
-
-    const quantite = parseInt(formData.quantite_total);
-    if (isNaN(quantite) || quantite < 1) {
-      Alert.alert("Erreur", "La quantité doit être un nombre positif");
       return;
     }
 
@@ -128,13 +148,18 @@ export default function MaterielNewScreen() {
       // Préparer les données pour l'API
       const createData = {
         nom: formData.nom.trim(),
-        reference: formData.reference.trim(),
+        reference: formData.reference.trim() || null,
+        etat: formData.etat.trim() || null,
         type_materiel: formData.type_materiel.trim(),
-        etat: formData.etat.trim(),
         date_achat: formatDateForAPI(formData.date_achat),
-        quantite_total: quantite,
+        date_commande_fournisseur: formatDateForAPI(formData.date_commande_fournisseur),
+        nom_fournisseur: formData.nom_fournisseur.trim() || null,
+        quantite_total: formData.quantite_total,
         client_id: formData.client_id,
-      } as any; // Type assertion pour contourner le problème de type
+        os: formData.os.trim() || null,
+        commentaire: formData.commentaire.trim() || null,
+        is_obsolete: formData.is_obsolete,
+      } as any;
 
       console.log('Données envoyées à l\'API:', createData);
       
@@ -177,6 +202,24 @@ export default function MaterielNewScreen() {
     }
   };
 
+  const handleCommandeDateChange = (event: any, selectedDate: Date | undefined) => {
+    if (Platform.OS === 'android') {
+      setShowCommandeDatePicker(false);
+    }
+
+    if (selectedDate) {
+      if (Platform.OS === 'ios') {
+        setTempSelectedCommandeDate(selectedDate);
+      } else {
+        setSelectedCommandeDate(selectedDate);
+        setFormData(prev => ({
+          ...prev,
+          date_commande_fournisseur: selectedDate.toISOString().split('T')[0]
+        }));
+      }
+    }
+  };
+
   const handleConfirmAchatDate = () => {
     setSelectedAchatDate(tempSelectedAchatDate);
     setFormData(prev => ({
@@ -186,9 +229,23 @@ export default function MaterielNewScreen() {
     setShowAchatDatePicker(false);
   };
 
+  const handleConfirmCommandeDate = () => {
+    setSelectedCommandeDate(tempSelectedCommandeDate);
+    setFormData(prev => ({
+      ...prev,
+      date_commande_fournisseur: tempSelectedCommandeDate.toISOString().split('T')[0]
+    }));
+    setShowCommandeDatePicker(false);
+  };
+
   const handleCancelAchatDate = () => {
     setTempSelectedAchatDate(selectedAchatDate);
     setShowAchatDatePicker(false);
+  };
+
+  const handleCancelCommandeDate = () => {
+    setTempSelectedCommandeDate(selectedCommandeDate);
+    setShowCommandeDatePicker(false);
   };
 
   const handleSelectClient = () => {
@@ -223,6 +280,54 @@ export default function MaterielNewScreen() {
     );
   };
 
+  const showPicker = (title: string, options: any[], currentValue: any, onSelect: (value: any) => void) => {
+    Alert.alert(
+      title,
+      'Sélectionnez une option',
+      [
+        {
+          text: 'Annuler',
+          style: 'cancel',
+        },
+        ...options.map(option => ({
+          text: option.label,
+          onPress: () => onSelect(option.value)
+        }))
+      ]
+    );
+  };
+
+  const updateFormField = (field: keyof typeof formData, value: any) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+  };
+
+  const renderNumberInput = (label: string, field: keyof typeof formData, placeholder: string) => (
+    <View style={styles.inputGroup}>
+      <Caption style={styles.label}>{label}</Caption>
+      <TextInput
+        style={styles.numberInput}
+        value={formData[field].toString()}
+        onChangeText={(value) => updateFormField(field, parseInt(value) || 0)}
+        placeholder={placeholder}
+        keyboardType="numeric"
+      />
+    </View>
+  );
+
+  const renderPicker = (label: string, field: keyof typeof formData, options: any[], currentValue: any) => (
+    <View style={styles.inputGroup}>
+      <Caption style={styles.label}>{label}</Caption>
+      <Pressable
+        style={styles.pickerButton}
+        onPress={() => showPicker(label, options, currentValue, (value) => updateFormField(field, value))}
+      >
+        <BodyText style={styles.pickerText}>
+          {options.find(opt => opt.value === currentValue)?.label || 'Sélectionner une option'}
+        </BodyText>
+      </Pressable>
+    </View>
+  );
+
   return (
     <View style={styles.container}>
       {/* Header */}
@@ -252,116 +357,63 @@ export default function MaterielNewScreen() {
             {/* Client */}
             <View style={styles.inputGroup}>
               <Caption style={styles.label}>Client *</Caption>
-              <View style={styles.pickerContainer}>
-                <Pressable
-                  style={styles.pickerButton}
-                  onPress={handleSelectClient}
-                  disabled={clientsLoading}
-                >
-                  <BodyText style={styles.pickerText}>
-                    {clientsLoading 
-                      ? 'Chargement des clients...' 
-                      : selectedClient 
-                        ? selectedClient.nom
-                        : 'Sélectionner un client'
-                    }
-                  </BodyText>
-                </Pressable>
-              </View>
+              <Pressable
+                style={styles.pickerButton}
+                onPress={handleSelectClient}
+                disabled={clientsLoading}
+              >
+                <BodyText style={styles.pickerText}>
+                  {clientsLoading 
+                    ? 'Chargement des clients...' 
+                    : selectedClient 
+                      ? selectedClient.nom
+                      : 'Sélectionner un client'
+                  }
+                </BodyText> 
+              </Pressable>
             </View>
 
-            {/* Nom */}
+            {/* Nom du matériel */}
             <View style={styles.inputGroup}>
-              <Caption style={styles.label}>Nom *</Caption>
-              <View style={styles.inputContainer}>
-                <Package size={20} color="#6b7280" />
-                <TextInput
-                  style={styles.textInput}
-                  value={formData.nom}
-                  onChangeText={(text) => setFormData(prev => ({ ...prev, nom: text }))}
-                  placeholder="Saisir le nom"
-                  placeholderTextColor="#9ca3af"
-                />
-              </View>
+              <Caption style={styles.label}>Nom du matériel *</Caption>
+              <TextInput
+                style={styles.textInput}
+                value={formData.nom}
+                onChangeText={(value) => updateFormField('nom', value)}
+                placeholder="Nom du matériel"
+                autoCapitalize="words"
+              />
             </View>
 
             {/* Référence */}
             <View style={styles.inputGroup}>
-              <Caption style={styles.label}>Référence *</Caption>
-              <View style={styles.inputContainer}>
-                <Package size={20} color="#6b7280" />
-                <TextInput
-                  style={styles.textInput}
-                  value={formData.reference}
-                  onChangeText={(text) => setFormData(prev => ({ ...prev, reference: text }))}
-                  placeholder="Saisir la référence"
-                  placeholderTextColor="#9ca3af"
-                />
-              </View>
+              <Caption style={styles.label}>Référence</Caption>
+              <TextInput
+                style={styles.textInput}
+                value={formData.reference}
+                onChangeText={(value) => updateFormField('reference', value)}
+                placeholder="Référence du matériel"
+                autoCapitalize="characters"
+              />
             </View>
 
             {/* Type de matériel */}
-            <View style={styles.inputGroup}>
-              <Caption style={styles.label}>Type de matériel *</Caption>
-              <View style={styles.pickerContainer}>
-                <Pressable
-                  style={styles.pickerButton}
-                  onPress={() => {
-                    Alert.alert(
-                      'Type de matériel',
-                      'Sélectionnez le type de matériel',
-                      typeMaterielOptions.map(option => ({
-                        text: option,
-                        onPress: () => setFormData(prev => ({ ...prev, type_materiel: option }))
-                      }))
-                    );
-                  }}
-                >
-                  <BodyText style={styles.pickerText}>
-                    {formData.type_materiel || 'Sélectionner un type'}
-                  </BodyText>
-                </Pressable>
-              </View>
-            </View>
+            {renderPicker('Type de matériel *', 'type_materiel', typeMaterielOptions, formData.type_materiel)}
 
             {/* État */}
-            <View style={styles.inputGroup}>
-              <Caption style={styles.label}>État</Caption>
-              <View style={styles.pickerContainer}>
-                <Pressable
-                  style={styles.pickerButton}
-                  onPress={() => {
-                    Alert.alert(
-                      'État',
-                      'Sélectionnez l\'état du matériel',
-                      [
-                        {
-                          text: 'Annuler',
-                          style: 'cancel',
-                        },
-                        ...etatOptions.map(option => ({
-                          text: option,
-                          onPress: () => setFormData(prev => ({ ...prev, etat: option }))
-                        })),
-                        {
-                          text: 'Effacer',
-                          style: 'destructive',
-                          onPress: () => setFormData(prev => ({ ...prev, etat: '' }))
-                        }
-                      ]
-                    );
-                  }}
-                >
-                  <BodyText style={styles.pickerText}>
-                    {formData.etat || 'Sélectionner un état'}
-                  </BodyText>
-                </Pressable>
-              </View>
-            </View>
+            {renderPicker('État', 'etat', etatOptions, formData.etat)}
 
+            {/* Quantité totale */}
+            {renderNumberInput('Quantité totale *', 'quantite_total', '1')}
+          </View>
+
+          {/* Dates et fournisseur */}
+          <View style={styles.section}>
+            <Heading2 style={styles.sectionTitle}>Dates et fournisseur</Heading2>
+            
             {/* Date d'achat */}
             <View style={styles.inputGroup}>
-              <Caption style={styles.label}>Date d'achat</Caption>
+              <Caption style={styles.label}>Date d&apos;achat *</Caption>
               <Pressable
                 style={styles.dateButton}
                 onPress={() => {
@@ -376,20 +428,71 @@ export default function MaterielNewScreen() {
               </Pressable>
             </View>
 
-            {/* Quantité totale */}
+            {/* Date commande fournisseur */}
             <View style={styles.inputGroup}>
-              <Caption style={styles.label}>Quantité totale</Caption>
-              <View style={styles.inputContainer}>
-                <Package size={20} color="#6b7280" />
-                <TextInput
-                  style={styles.textInput}
-                  value={formData.quantite_total}
-                  onChangeText={(text) => setFormData(prev => ({ ...prev, quantite_total: text }))}
-                  placeholder="1"
-                  placeholderTextColor="#9ca3af"
-                  keyboardType="numeric"
+              <Caption style={styles.label}>Date commande fournisseur</Caption>
+              <Pressable
+                style={styles.dateButton}
+                onPress={() => {
+                  setTempSelectedCommandeDate(selectedCommandeDate);
+                  setShowCommandeDatePicker(true);
+                }}
+              >
+                <Calendar size={20} color="#6b7280" />
+                <BodyText style={styles.dateText}>
+                  {formData.date_commande_fournisseur ? formatDateForDisplay(formData.date_commande_fournisseur) : 'Sélectionner une date'}
+                </BodyText>
+              </Pressable>
+            </View>
+
+            {/* Nom du fournisseur */}
+            <View style={styles.inputGroup}>
+              <Caption style={styles.label}>Nom du fournisseur</Caption>
+              <TextInput
+                style={styles.textInput}
+                value={formData.nom_fournisseur}
+                onChangeText={(value) => updateFormField('nom_fournisseur', value)}
+                placeholder="Nom du fournisseur"
+                autoCapitalize="words"
+              />
+            </View>
+          </View>
+
+          {/* Système et statut */}
+          <View style={styles.section}>
+            <Heading2 style={styles.sectionTitle}>Système et statut</Heading2>
+            
+            {/* Système d'exploitation */}
+            {renderPicker('Système d\'exploitation', 'os', osOptions, formData.os)}
+
+            {/* Matériel obsolète */}
+            <View style={styles.inputGroup}>
+              <Caption style={styles.label}>Matériel obsolète</Caption>
+              <View style={styles.switchContainer}>
+                <Switch
+                  value={formData.is_obsolete}
+                  onValueChange={(value) => updateFormField('is_obsolete', value)}
+                  trackColor={{ false: '#d1d5db', true: '#2563eb' }}
+                  thumbColor={formData.is_obsolete ? '#fff' : '#f4f3f4'}
                 />
+                <BodyText style={styles.switchLabel}>
+                  {formData.is_obsolete ? 'Obsolète' : 'Actuel'}
+                </BodyText>
               </View>
+            </View>
+
+            {/* Commentaire */}
+            <View style={styles.inputGroup}>
+              <Caption style={styles.label}>Commentaire</Caption>
+              <TextInput
+                style={[styles.textInput, styles.textArea]}
+                value={formData.commentaire}
+                onChangeText={(value) => updateFormField('commentaire', value)}
+                placeholder="Ajoutez un commentaire sur ce matériel..."
+                multiline={true}
+                numberOfLines={4}
+                textAlignVertical="top"
+              />
             </View>
           </View>
 
@@ -415,7 +518,7 @@ export default function MaterielNewScreen() {
                 >
                   <BodyText style={styles.modalButton}>Annuler</BodyText>
                 </Pressable>
-                <BodyText style={styles.modalTitle}>Sélectionner une date d'achat</BodyText>
+                <BodyText style={styles.modalTitle}>Sélectionner une date d&apos;achat</BodyText>
                 <Pressable 
                   onPress={handleConfirmAchatDate}
                   style={styles.modalButtonContainer}
@@ -445,6 +548,59 @@ export default function MaterielNewScreen() {
             mode="date"
             display="default"
             onChange={handleAchatDateChange}
+            maximumDate={new Date(2100, 11, 31)}
+            minimumDate={new Date(1900, 0, 1)}
+          />
+        )
+      )}
+
+      {/* Modal pour le sélecteur de date de commande */}
+      {Platform.OS === 'ios' ? (
+        <Modal
+          animationType="fade"
+          transparent={true}
+          visible={showCommandeDatePicker}
+          onRequestClose={() => setShowCommandeDatePicker(false)}
+        >
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalContent}>
+              <View style={styles.modalHeader}>
+                <Pressable 
+                  onPress={handleCancelCommandeDate}
+                  style={styles.modalButtonContainer}
+                >
+                  <BodyText style={styles.modalButton}>Annuler</BodyText>
+                </Pressable>
+                <BodyText style={styles.modalTitle}>Sélectionner une date de commande</BodyText>
+                <Pressable 
+                  onPress={handleConfirmCommandeDate}
+                  style={styles.modalButtonContainer}
+                >
+                  <BodyText style={styles.modalButton}>Terminé</BodyText>
+                </Pressable>
+              </View> 
+              <View style={{ padding: 20, backgroundColor: 'white' }}>
+                <DateTimePicker
+                  value={tempSelectedCommandeDate}
+                  mode="date"
+                  display="spinner"
+                  onChange={handleCommandeDateChange}
+                  maximumDate={new Date(2100, 11, 31)}
+                  minimumDate={new Date(1900, 0, 1)}
+                  themeVariant="light"
+                  textColor="#000"  
+                />
+              </View>
+            </View>
+          </View>
+        </Modal>
+      ) : (
+        showCommandeDatePicker && (
+          <DateTimePicker
+            value={selectedCommandeDate}
+            mode="date"
+            display="default"
+            onChange={handleCommandeDateChange}
             maximumDate={new Date(2100, 11, 31)}
             minimumDate={new Date(1900, 0, 1)}
           />
@@ -510,30 +666,12 @@ const styles = StyleSheet.create({
     marginBottom: 8,
     fontWeight: "500",
   },
-  inputContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    padding: 12,
-    borderWidth: 1,
-    borderColor: "#d1d5db",
-    borderRadius: 8,
-    backgroundColor: "#fff",
-    gap: 12,
-  },
-  textInput: {
-    color: "#374151",
-    fontSize: 16,
-    flex: 1,
-    padding: 0,
-  },
-  pickerContainer: {
-    borderWidth: 1,
-    borderColor: "#d1d5db",
-    borderRadius: 8,
-    backgroundColor: "#fff",
-  },
   pickerButton: {
     padding: 12,
+    borderWidth: 1,
+    borderColor: "#d1d5db",
+    borderRadius: 8,
+    backgroundColor: "#fff",
   },
   pickerText: {
     color: "#374151",
@@ -550,6 +688,40 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   dateText: {
+    color: "#374151",
+    fontSize: 16,
+  },
+  textInput: {
+    borderWidth: 1,
+    borderColor: "#d1d5db",
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 12,
+    fontSize: 16,
+    color: "#1f2937",
+    backgroundColor: "#fff",
+  },
+  numberInput: {
+    borderWidth: 1,
+    borderColor: "#d1d5db",
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 12,
+    fontSize: 16,
+    color: "#1f2937",
+    backgroundColor: "#fff",
+  },
+  textArea: {
+    height: 100,
+    textAlignVertical: 'top',
+  },
+  switchContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    paddingVertical: 8,
+  },
+  switchLabel: {
     color: "#374151",
     fontSize: 16,
   },

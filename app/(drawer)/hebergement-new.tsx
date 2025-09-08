@@ -5,20 +5,20 @@ import { servicesWebApi } from "@/services/servicesWebApi";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { DrawerActions, useNavigation } from "@react-navigation/native";
 import { useRouter } from "expo-router";
-import { ArrowLeft, Calendar, ChevronDown, Globe, Save, User } from "lucide-react-native";
+import { ArrowLeft, Calendar, Globe, Save } from "lucide-react-native";
 import React, { useEffect, useState } from "react";
 import {
-    ActivityIndicator,
-    Alert,
-    KeyboardAvoidingView,
-    Modal,
-    Platform,
-    Pressable,
-    ScrollView,
-    StyleSheet,
-    Switch,
-    TextInput,
-    View,
+  ActivityIndicator,
+  Alert,
+  KeyboardAvoidingView,
+  Modal,
+  Platform,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Switch,
+  TextInput,
+  View,
 } from "react-native";
 
 export default function HebergementNewScreen() {
@@ -239,20 +239,42 @@ export default function HebergementNewScreen() {
             {/* Client */}
             <View style={styles.inputGroup}>
               <Caption style={styles.label}>Client *</Caption>
-              <View style={styles.inputContainer}>
-                <User size={20} color="#6b7280" />
+              <View style={styles.pickerContainer}>
                 <Pressable
-                  style={styles.selectContainer}
-                  onPress={() => setShowClientPicker(true)}
-                  disabled={loadingClients}
+                  style={styles.pickerButton}
+                  onPress={() => {
+                    if (loadingClients) {
+                      Alert.alert('Chargement', 'Veuillez attendre le chargement des clients');
+                      return;
+                    }
+                    
+                    Alert.alert(
+                      'Sélectionner un client',
+                      'Choisissez un client dans la liste',
+                      [
+                        {
+                          text: 'Annuler',
+                          style: 'cancel',
+                        },
+                        ...clients.map(client => ({
+                          text: client.nom,
+                          onPress: () => {
+                            setFormData(prev => ({
+                              ...prev,
+                              clientId: client.id
+                            }));
+                          },
+                        }))
+                      ]
+                    );
+                  }}
                 >
-                  <BodyText style={[styles.selectText, !formData.clientId && styles.placeholderText]}>
-                    {loadingClients ? "Chargement..." : 
-                     formData.clientId ? 
-                       getSelectedClientName() || "Client sélectionné" :
-                       "Sélectionner un client"}
+                  <BodyText style={styles.pickerText}>
+                    {(() => {
+                      const selectedClient = clients.find(c => c.id === formData.clientId);
+                      return selectedClient ? selectedClient.nom : 'Sélectionner un client';
+                    })()}
                   </BodyText>
-                  <ChevronDown size={20} color="#6b7280" />
                 </Pressable>
               </View>
             </View>
@@ -260,16 +282,34 @@ export default function HebergementNewScreen() {
             {/* Type d'hébergement */}
             <View style={styles.inputGroup}>
               <Caption style={styles.label}>Type d&apos;hébergement *</Caption>
-              <View style={styles.inputContainer}>
-                <Globe size={20} color="#6b7280" />
+              <View style={styles.pickerContainer}>
                 <Pressable
-                  style={styles.selectContainer}
-                  onPress={() => setShowTypePicker(true)}
+                  style={styles.pickerButton}
+                  onPress={() => {
+                    Alert.alert(
+                      'Type d\'hébergement',
+                      'Sélectionnez le type d\'hébergement',
+                      [
+                        {
+                          text: 'Annuler',
+                          style: 'cancel',
+                        },
+                        ...typeHebergementOptions.map(option => ({
+                          text: option.label,
+                          onPress: () => {
+                            setFormData(prev => ({
+                              ...prev,
+                              typeHebergement: option.value
+                            }));
+                          },
+                        }))
+                      ]
+                    );
+                  }}
                 >
-                  <BodyText style={[styles.selectText, !formData.typeHebergement && styles.placeholderText]}>
-                    {formData.typeHebergement || "Sélectionner le type d'hébergement"}
+                  <BodyText style={styles.pickerText}>
+                    {formData.typeHebergement || 'Sélectionner le type d\'hébergement'}
                   </BodyText>
-                  <ChevronDown size={20} color="#6b7280" />
                 </Pressable>
               </View>
             </View>
@@ -316,33 +356,35 @@ export default function HebergementNewScreen() {
             {/* Date de renouvellement */}
             <View style={styles.inputGroup}>
               <Caption style={styles.label}>Date de renouvellement</Caption>
-              <View style={styles.inputContainer}>
+              <Pressable
+                style={styles.dateButton}
+                onPress={() => {
+                  setTempSelectedRenouvellementDate(selectedRenouvellementDate);
+                  setShowRenouvellementDatePicker(true);
+                }}
+              >
                 <Calendar size={20} color="#6b7280" />
-                <Pressable
-                  style={styles.dateInput}
-                  onPress={() => setShowRenouvellementDatePicker(true)}
-                >
-                  <BodyText style={[styles.dateText, !formData.dateRenouvellement && styles.placeholderText]}>
-                    {formData.dateRenouvellement ? formatDateForDisplay(formData.dateRenouvellement) : "Sélectionner une date"}
-                  </BodyText>
-                </Pressable>
-              </View>
+                <BodyText style={styles.dateText}>
+                  {formData.dateRenouvellement ? formatDateForDisplay(formData.dateRenouvellement) : 'Sélectionner une date'}
+                </BodyText>
+              </Pressable>
             </View>
 
             {/* Date de rappel */}
             <View style={styles.inputGroup}>
               <Caption style={styles.label}>Date de rappel</Caption>
-              <View style={styles.inputContainer}>
+              <Pressable
+                style={styles.dateButton}
+                onPress={() => {
+                  setTempSelectedRappelDate(selectedRappelDate);
+                  setShowRappelDatePicker(true);
+                }}
+              >
                 <Calendar size={20} color="#6b7280" />
-                <Pressable
-                  style={styles.dateInput}
-                  onPress={() => setShowRappelDatePicker(true)}
-                >
-                  <BodyText style={[styles.dateText, !formData.dateRappel && styles.placeholderText]}>
-                    {formData.dateRappel ? formatDateForDisplay(formData.dateRappel) : "Sélectionner une date"}
-                  </BodyText>
-                </Pressable>
-              </View>
+                <BodyText style={styles.dateText}>
+                  {formData.dateRappel ? formatDateForDisplay(formData.dateRappel) : 'Sélectionner une date'}
+                </BodyText>
+              </Pressable>
             </View>
 
             {/* Dernière facture */}
@@ -651,32 +693,37 @@ const styles = StyleSheet.create({
   modalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: 'flex-end',
   },
   modalContent: {
     backgroundColor: 'white',
-    borderRadius: 20,
-    width: '80%',
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    width: '100%',
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
-      height: 2,
+      height: -2,
     },
     shadowOpacity: 0.25,
     shadowRadius: 4,
     elevation: 5,
   },
   modalHeader: {
-    padding: 20,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingVertical: 16,
     borderBottomWidth: 1,
     borderBottomColor: '#e5e7eb',
   },
   modalTitle: {
     color: '#1f2937',
     fontWeight: '600',
-    fontSize: 20,
+    fontSize: 16,
     textAlign: 'center',
+    flex: 1,
   },
   modalSubtitle: {
     color: '#6b7280',
@@ -725,6 +772,28 @@ const styles = StyleSheet.create({
   selectText: {
     color: '#374151',
     fontSize: 16,
-    flex: 1,
+  },
+  pickerContainer: {
+    borderWidth: 1,
+    borderColor: "#d1d5db",
+    borderRadius: 8,
+    backgroundColor: "#fff",
+  },
+  pickerButton: {
+    padding: 12,
+  },
+  pickerText: {
+    color: "#374151",
+    fontSize: 16,
+  },
+  dateButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    padding: 12,
+    borderWidth: 1,
+    borderColor: "#d1d5db",
+    borderRadius: 8,
+    backgroundColor: "#fff",
+    gap: 12,
   },
 });

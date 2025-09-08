@@ -1,16 +1,16 @@
 import { BodyText, Caption, Heading3 } from '@/components/CustomText';
 import { Contrat } from '@/services/contratsApi';
-import { Calendar, CalendarClock, Edit, Eye, FileText } from 'lucide-react-native';
+import { Calendar, CalendarClock, Edit, Eye, FileText, Server } from 'lucide-react-native';
 import React from 'react';
 import {
-  Alert,
-  FlatList,
-  RefreshControl,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-  ViewStyle,
+    Alert,
+    FlatList,
+    RefreshControl,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
+    ViewStyle,
 } from 'react-native';
 
 export type ContratListVariant = 'card' | 'compact' | 'detailed';
@@ -95,6 +95,9 @@ const ContratCard: React.FC<ContratCardProps> = ({
           <View style={styles.compactMain}>
             <Heading3 style={styles.compactType}>{contrat.client || 'Client non défini'}</Heading3>
             <BodyText style={styles.compactClient}>{contrat.type_contrat}</BodyText>
+            <BodyText style={styles.compactStatus}>
+              Statut: {contrat.statut}
+            </BodyText>
           </View>
           <View style={styles.compactIcons}>
             <FileText size={16} color="#666" />
@@ -137,6 +140,20 @@ const ContratCard: React.FC<ContratCardProps> = ({
               Expiration: {formatDate(contrat.date_expiration)}
             </BodyText>
           </View>
+
+          {/* Affichage des équipements si présents */}
+          {(contrat.nombreServPhysique > 0 || contrat.nombreServVirtuel > 0 || contrat.nombrePcFixe > 0 || contrat.nombrePcPortable > 0) && (
+            <View style={styles.equipmentRow}>
+              <Server size={16} color="#666" />
+              <BodyText style={styles.equipmentText}>
+                {[contrat.nombreServPhysique > 0 && `${contrat.nombreServPhysique} serv. phys.`,
+                  contrat.nombreServVirtuel > 0 && `${contrat.nombreServVirtuel} serv. virt.`,
+                  contrat.nombrePcFixe > 0 && `${contrat.nombrePcFixe} PC fixes`,
+                  contrat.nombrePcPortable > 0 && `${contrat.nombrePcPortable} PC port.`]
+                  .filter(Boolean).join(', ')}
+              </BodyText>
+            </View>
+          )}
         </View>
 
         {showActions && (
@@ -385,5 +402,21 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#9ca3af',
     textAlign: 'center',
+  },
+  compactStatus: {
+    fontSize: 12,
+    color: '#6b7280',
+    marginTop: 2,
+  },
+  equipmentRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    marginTop: 8,
+  },
+  equipmentText: {
+    fontSize: 13,
+    color: '#6b7280',
+    flex: 1,
   },
 });

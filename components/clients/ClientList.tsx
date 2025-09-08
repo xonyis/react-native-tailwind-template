@@ -3,13 +3,13 @@ import { Client } from '@/services/ClientsApi';
 import { Edit, Eye, Mail, MapPin, Phone, User } from 'lucide-react-native';
 import React from 'react';
 import {
-  Alert,
-  FlatList,
-  RefreshControl,
-  StyleSheet,
-  TouchableOpacity,
-  View,
-  ViewStyle,
+    Alert,
+    FlatList,
+    RefreshControl,
+    StyleSheet,
+    TouchableOpacity,
+    View,
+    ViewStyle,
 } from 'react-native';
 
 
@@ -77,7 +77,7 @@ const ClientCard: React.FC<ClientCardProps> = ({
         <View style={styles.compactContent}>
           <View style={styles.compactMain}>
             <Heading3 style={styles.compactName}>{client.nom}</Heading3>
-            <BodyText style={styles.compactEmail}>{client.email}</BodyText>
+            <BodyText style={styles.compactEmail}>{client.adresseEmail1 || 'Aucun email'}</BodyText>
           </View>
           <View style={styles.compactIcons}>
             <User size={16} color="#666" />
@@ -102,15 +102,19 @@ const ClientCard: React.FC<ClientCardProps> = ({
         </View>
 
         <View style={styles.detailedInfo}>
-          <View style={styles.infoRow}>
-            <Mail size={16} color="#666" />
-            <BodyText style={styles.infoText}>{client.email}</BodyText>
-          </View>
+          {client.adresseEmail1 && (
+            <View style={styles.infoRow}>
+              <Mail size={16} color="#666" />
+              <BodyText style={styles.infoText}>{client.adresseEmail1}</BodyText>
+            </View>
+          )}
           
-          <View style={styles.infoRow}>
-            <Phone size={16} color="#666" />
-            <BodyText style={styles.infoText}>{client.telephone}</BodyText>
-          </View>
+          {client.numeroTel1 && (
+            <View style={styles.infoRow}>
+              <Phone size={16} color="#666" />
+              <BodyText style={styles.infoText}>{client.numeroTel1}</BodyText>
+            </View>
+          )}
           
           <View style={styles.infoRow}>
             <MapPin size={16} color="#666" />
@@ -119,10 +123,10 @@ const ClientCard: React.FC<ClientCardProps> = ({
             </BodyText>
           </View>
 
-          {client.raisonSocial && (
+          {client.referenceClient && (
             <View style={styles.raisonSocial}>
               <Caption style={styles.raisonText}>
-                Raison sociale: {client.raisonSocial}
+                Référence: {client.referenceClient}
               </Caption>
             </View>
           )}
@@ -156,14 +160,14 @@ const ClientCard: React.FC<ClientCardProps> = ({
       activeOpacity={0.7}
     >
       <Heading3 style={styles.defaultName}>{client.nom}</Heading3>
-      <BodyText style={styles.defaultEmail}>{client.email}</BodyText>
-      <BodyText style={styles.defaultPhone}>{client.telephone}</BodyText>
+      <BodyText style={styles.defaultEmail}>{client.adresseEmail1 || 'Aucun email'}</BodyText>
+      <BodyText style={styles.defaultPhone}>{client.numeroTel1 || 'Aucun téléphone'}</BodyText>
       <BodyText style={styles.defaultAddress}>
         {client.adresseClient}, {client.ville} {client.codePostal}
       </BodyText>
-      {client.raisonSocial && (
+      {client.referenceClient && (
         <Caption style={styles.defaultRaison}>
-          Raison sociale: {client.raisonSocial}
+          Référence: {client.referenceClient}
         </Caption>
       )}
     </TouchableOpacity>

@@ -3,10 +3,15 @@ import { makeAuthenticatedRequest } from './authApi';
 export interface Materiel {
   id: number;
   nom: string;
-  reference: string;
-  etat: string;
+  reference: string | null;
+  etat: string | null;
   type_materiel: string;
   date_achat: string;
+  date_commande_fournisseur: string | null;
+  nom_fournisseur: string | null;
+  is_obsolete: boolean;
+  commentaire: string | null;
+  os: string | null;
   quantite_total: number;
   client: string;
 }
@@ -14,13 +19,18 @@ export interface Materiel {
 export interface ClientDetails {
   id: number;
   nom: string;
-  email: string;
-  telephone: string;
-  referenceClient: string;
-  adresseClient: string;
-  ville: string;
-  codePostal: string;
-  pays: string;
+  adresseEmail1: string | null;
+  adresseEmail2: string | null;
+  adresseClient: string | null;
+  ville: string | null;
+  codePostal: string | null;
+  pays: string | null;
+  numeroTel1: string | null;
+  numeroTel2: string | null;
+  referenceClient: string | null;
+  typeClient: string | null;
+  visiteAnnuelle: string | null;
+  commentaire: string | null;
 }
 
 export interface MaterielDetail extends Omit<Materiel, 'client'> {

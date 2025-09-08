@@ -4,15 +4,15 @@ import { useAuth } from "@/context/AuthContext";
 import { MaterielDetail, materielsApi } from "@/services/materielsApi";
 import { DrawerActions, useNavigation } from "@react-navigation/native";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { ArrowLeft, Calendar1, Edit, Mail, Package, Phone, Trash, User, Wrench } from "lucide-react-native";
+import { AlertTriangle, ArrowLeft, Calendar1, Edit, Mail, Monitor, Package, Phone, Trash, User, Wrench } from "lucide-react-native";
 import React, { useCallback, useEffect, useState } from "react";
 import {
-  ActivityIndicator,
-  Alert,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  View,
+    ActivityIndicator,
+    Alert,
+    Pressable,
+    ScrollView,
+    StyleSheet,
+    View,
 } from "react-native";
 
 export default function MaterielDetailScreen() {
@@ -200,6 +200,12 @@ export default function MaterielDetailScreen() {
                 <Caption style={styles.typeText}>{materiel.type_materiel}</Caption>
               </View>
             )}
+            {materiel.is_obsolete && (
+              <View style={[styles.statusBadge, { backgroundColor: '#ef444420' }]}>
+                <AlertTriangle size={12} color="#ef4444" />
+                <Caption style={[styles.statusText, { color: '#ef4444' }]}>Obsolète</Caption>
+              </View>
+            )}
           </View>
         </View>
 
@@ -224,6 +230,29 @@ export default function MaterielDetailScreen() {
           </View>
 
           <View style={styles.infoRow}>
+            <Package size={20} color="#6b7280" />
+            <View style={styles.infoContent}>
+              <Caption style={styles.infoLabel}>Quantité totale</Caption>
+              <BodyText style={styles.infoValue}>{materiel.quantite_total || 0}</BodyText>
+            </View>
+          </View>
+
+          {materiel.os && (
+            <View style={styles.infoRow}>
+              <Monitor size={20} color="#6b7280" />
+              <View style={styles.infoContent}>
+                <Caption style={styles.infoLabel}>Système d'exploitation</Caption>
+                <BodyText style={styles.infoValue}>{materiel.os}</BodyText>
+              </View>
+            </View>
+          )}
+        </View>
+
+        {/* Dates et fournisseur */}
+        <View style={styles.section}>
+          <Heading3 style={styles.sectionTitle}>Dates et fournisseur</Heading3>
+          
+          <View style={styles.infoRow}>
             <Calendar1 size={20} color="#6b7280" />
             <View style={styles.infoContent}>
               <Caption style={styles.infoLabel}>Date d'achat</Caption>
@@ -231,23 +260,34 @@ export default function MaterielDetailScreen() {
             </View>
           </View>
 
-          <View style={styles.infoRow}>
-            <Calendar1 size={20} color="#6b7280" />
-            <View style={styles.infoContent}>
-              <Caption style={styles.infoLabel}>Date d'expiration</Caption>
-              <BodyText style={styles.infoValue}>{formatDate(materiel.date_achat)}</BodyText>
-              <Caption style={styles.expirationWarning}>2 jours restants</Caption>
+          {materiel.date_commande_fournisseur && (
+            <View style={styles.infoRow}>
+              <Calendar1 size={20} color="#6b7280" />
+              <View style={styles.infoContent}>
+                <Caption style={styles.infoLabel}>Date commande fournisseur</Caption>
+                <BodyText style={styles.infoValue}>{formatDate(materiel.date_commande_fournisseur)}</BodyText>
+              </View>
             </View>
-          </View>
+          )}
 
-          <View style={styles.infoRow}>
-            <Package size={20} color="#6b7280" />
-            <View style={styles.infoContent}>
-              <Caption style={styles.infoLabel}>Quantité totale</Caption>
-              <BodyText style={styles.infoValue}>{materiel.quantite_total || 0}</BodyText>
+          {materiel.nom_fournisseur && (
+            <View style={styles.infoRow}>
+              <Package size={20} color="#6b7280" />
+              <View style={styles.infoContent}>
+                <Caption style={styles.infoLabel}>Fournisseur</Caption>
+                <BodyText style={styles.infoValue}>{materiel.nom_fournisseur}</BodyText>
+              </View>
             </View>
-          </View>
+          )}
         </View>
+
+        {/* Commentaire */}
+        {materiel.commentaire && (
+          <View style={styles.section}>
+            <Heading3 style={styles.sectionTitle}>Commentaire</Heading3>
+            <BodyText style={styles.commentText}>{materiel.commentaire}</BodyText>
+          </View>
+        )}
 
         {/* Contact */}
         {materiel.client && (
@@ -262,27 +302,55 @@ export default function MaterielDetailScreen() {
               </View>
             </View>
 
-            {materiel.client.email && (
+            {materiel.client.adresseEmail1 && (
               <View style={styles.infoRow}>
                 <Mail size={20} color="#6b7280" />
                 <View style={styles.infoContent}>
-                  <Caption style={styles.infoLabel}>Email</Caption>
-                  <BodyText style={styles.infoValue}>{materiel.client.email}</BodyText>
+                  <Caption style={styles.infoLabel}>Email principal</Caption>
+                  <BodyText style={styles.infoValue}>{materiel.client.adresseEmail1}</BodyText>
                 </View>
               </View>
             )}
 
-            {materiel.client.telephone && (
+            {materiel.client.adresseEmail2 && (
+              <View style={styles.infoRow}>
+                <Mail size={20} color="#6b7280" />
+                <View style={styles.infoContent}>
+                  <Caption style={styles.infoLabel}>Email secondaire</Caption>
+                  <BodyText style={styles.infoValue}>{materiel.client.adresseEmail2}</BodyText>
+                </View>
+              </View>
+            )}
+
+            {materiel.client.numeroTel1 && (
               <View style={styles.infoRow}>
                 <Phone size={20} color="#6b7280" />
                 <View style={styles.infoContent}>
-                  <Caption style={styles.infoLabel}>Téléphone</Caption>
-                  <BodyText style={styles.infoValue}>{materiel.client.telephone}</BodyText>
+                  <Caption style={styles.infoLabel}>Téléphone principal</Caption>
+                  <BodyText style={styles.infoValue}>{materiel.client.numeroTel1}</BodyText>
                 </View>
               </View>
             )}
 
+            {materiel.client.numeroTel2 && (
+              <View style={styles.infoRow}>
+                <Phone size={20} color="#6b7280" />
+                <View style={styles.infoContent}>
+                  <Caption style={styles.infoLabel}>Téléphone secondaire</Caption>
+                  <BodyText style={styles.infoValue}>{materiel.client.numeroTel2}</BodyText>
+                </View>
+              </View>
+            )}
 
+            {materiel.client.referenceClient && (
+              <View style={styles.infoRow}>
+                <User size={20} color="#6b7280" />
+                <View style={styles.infoContent}>
+                  <Caption style={styles.infoLabel}>Référence client</Caption>
+                  <BodyText style={styles.infoValue}>{materiel.client.referenceClient}</BodyText>
+                </View>
+              </View>
+            )}
           </View>
         )}
 
@@ -410,6 +478,16 @@ const styles = StyleSheet.create({
   infoValue: {
     color: "#374151",
     fontSize: 16,
+  },
+  commentText: {
+    color: "#374151",
+    fontSize: 16,
+    lineHeight: 24,
+    backgroundColor: "#f9fafb",
+    padding: 16,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "#e5e7eb",
   },
   loadingContainer: {
     flex: 1,

@@ -3,20 +3,20 @@ import { makeAuthenticatedRequest } from './authApi';
 export interface Client {
   id: number;
   nom: string;
-  email: string;
-  telephone: string;
-  raisonSocial: string | null;
-  adresseClient: string;
-  ville: string;
-  codePostal: string;
+  adresseEmail1: string | null;
+  adresseEmail2: string | null;
+  adresseClient: string | null;
+  ville: string | null;
+  codePostal: string | null;
+  pays: string | null;
   numeroTel1: string | null;
   numeroTel2: string | null;
-  siret: string | null;
   typeClient: string | null;
   latitude: number | null;
   longitude: number | null;
   referenceClient: string | null;
   visiteAnnuelle: string | null;
+  commentaire: string | null;
 }
 
 

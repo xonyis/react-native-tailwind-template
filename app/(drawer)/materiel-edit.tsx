@@ -6,7 +6,7 @@ import { materielsApi } from "@/services/materielsApi";
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { DrawerActions, useNavigation } from "@react-navigation/native";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { ArrowLeft, Calendar, Package, Save } from "lucide-react-native";
+import { ArrowLeft, Calendar, Save } from "lucide-react-native";
 import React, { useEffect, useState } from "react";
 import {
     ActivityIndicator,
@@ -17,8 +17,9 @@ import {
     Pressable,
     ScrollView,
     StyleSheet,
+    Switch,
     TextInput,
-    View,
+    View
 } from "react-native";
 
 export default function MaterielEditScreen() {
@@ -32,58 +33,83 @@ export default function MaterielEditScreen() {
   
   const [saving, setSaving] = useState(false);
   const [showAchatDatePicker, setShowAchatDatePicker] = useState(false);
+  const [showCommandeDatePicker, setShowCommandeDatePicker] = useState(false);
   const [selectedAchatDate, setSelectedAchatDate] = useState(new Date());
+  const [selectedCommandeDate, setSelectedCommandeDate] = useState(new Date());
   const [tempSelectedAchatDate, setTempSelectedAchatDate] = useState(new Date());
+  const [tempSelectedCommandeDate, setTempSelectedCommandeDate] = useState(new Date());
   
   // États pour les champs du formulaire
   const [formData, setFormData] = useState({
     nom: '',
     reference: '',
-    type_materiel: '',
     etat: '',
+    type_materiel: '',
     date_achat: '',
-    quantite_total: '',
+    date_commande_fournisseur: '',
+    nom_fournisseur: '',
+    quantite_total: 1,
+    os: '',
+    commentaire: '',
+    is_obsolete: false,
   });
 
   // Options pour les sélecteurs
   const typeMaterielOptions = [
-    'PC PORTABLE',
-    'ORDINATEUR DE BUREAU',
-    'ONDULEUR',
-    'SWITCH',
-    'BARETTE DE RAM',
-    'TAMBOUR IMPRIMANTE',
-    'TONER IMPRIMANTE',
-    'CARTOUCHE',
-    'IMPRIMANTE',
-    'SCANNER',
-    'SOURIS SANS FIL',
-    'CLAVIER SANS FIL',
-    'CLAVIER + SOURIS SANS FIL',
-    'STOCKAGE SAN/NAS',
-    'NAS',
-    'HDD',
-    'LECTEUR DVD',
-    'SOLUTION DE SECURITE',
-    'BARRE DE SON',
-    'ENSEMBLE CLAVIER ET SOURIS',
-    'ECRAN LED',
-    'ECRAN LCD',
-    'SSD',
-    'CHANGEMENT DE DALLE',
-    'SUPPORT ECRAN PC',
-    'WEBCAM',
-    'TV',
-    'CABLE',
-    'ADAPTEUR',
-    'BRAS ECRAN',
-    'TABLET A STYLET',
-    'COMUTATEUR',
-    'BORNE WIFI',
-    'CASQUE AUDIO',
-    'ACCESSOIRES'
+    { label: 'PC PORTABLE', value: 'PC PORTABLE' },
+    { label: 'ORDINATEUR DE BUREAU', value: 'ORDINATEUR DE BUREAU' },
+    { label: 'ONDULEUR', value: 'ONDULEUR' },
+    { label: 'SWITCH', value: 'SWITCH' },
+    { label: 'BARETTE DE RAM', value: 'BARETTE DE RAM' },
+    { label: 'TAMBOUR IMPRIMANTE', value: 'TAMBOUR IMPRIMANTE' },
+    { label: 'TONER IMPRIMANTE', value: 'TONER IMPRIMANTE' },
+    { label: 'CARTOUCHE', value: 'CARTOUCHE' },
+    { label: 'IMPRIMANTE', value: 'IMPRIMANTE' },
+    { label: 'SCANNER', value: 'SCANNER' },
+    { label: 'SOURIS SANS FIL', value: 'SOURIS SANS FIL' },
+    { label: 'CLAVIER SANS FIL', value: 'CLAVIER SANS FIL' },
+    { label: 'CLAVIER + SOURIS SANS FIL', value: 'CLAVIER + SOURIS SANS FIL' },
+    { label: 'STOCKAGE SAN/NAS', value: 'STOCKAGE SAN/NAS' },
+    { label: 'NAS', value: 'NAS' },
+    { label: 'HDD', value: 'HDD' },
+    { label: 'LECTEUR DVD', value: 'LECTEUR DVD' },
+    { label: 'SOLUTION DE SECURITE', value: 'SOLUTION DE SECURITE' },
+    { label: 'BARRE DE SON', value: 'BARRE DE SON' },
+    { label: 'ENSEMBLE CLAVIER ET SOURIS', value: 'ENSEMBLE CLAVIER ET SOURIS' },
+    { label: 'ECRAN LED', value: 'ECRAN LED' },
+    { label: 'ECRAN LCD', value: 'ECRAN LCD' },
+    { label: 'SSD', value: 'SSD' },
+    { label: 'CHANGEMENT DE DALLE', value: 'CHANGEMENT DE DALLE' },
+    { label: 'SUPPORT ECRAN PC', value: 'SUPPORT ECRAN PC' },
+    { label: 'WEBCAM', value: 'WEBCAM' },
+    { label: 'TV', value: 'TV' },
+    { label: 'CABLE', value: 'CABLE' },
+    { label: 'ADAPTEUR', value: 'ADAPTEUR' },
+    { label: 'BRAS ECRAN', value: 'BRAS ECRAN' },
+    { label: 'TABLET A STYLET', value: 'TABLET A STYLET' },
+    { label: 'COMUTATEUR', value: 'COMUTATEUR' },
+    { label: 'BORNE WIFI', value: 'BORNE WIFI' },
+    { label: 'CASQUE AUDIO', value: 'CASQUE AUDIO' },
+    { label: 'ACCESSOIRES', value: 'ACCESSOIRES' },
+    { label: 'AUTRE', value: 'AUTRE' },
   ];
-  const etatOptions = ['Neuf', 'Excellent', 'Bon', 'Moyen', 'Mauvais', 'Défectueux'];
+
+  const etatOptions = [
+    { label: 'Neuf', value: 'Neuf' },
+    { label: 'Excellent', value: 'Excellent' },
+    { label: 'Bon', value: 'Bon' },
+    { label: 'Moyen', value: 'Moyen' },
+    { label: 'Mauvais', value: 'Mauvais' },
+    { label: 'Défectueux', value: 'Défectueux' },
+  ];
+
+  const osOptions = [
+    { label: 'Windows 7', value: 'Windows 7' },
+    { label: 'Windows 10', value: 'Windows 10' },
+    { label: 'Windows 11', value: 'Windows 11' },
+    { label: 'macOS', value: 'macOS' },
+    { label: 'Autre', value: 'Autre' },
+  ];
 
   useEffect(() => {
     if (materiel) {
@@ -91,15 +117,23 @@ export default function MaterielEditScreen() {
       setFormData({
         nom: materiel.nom || '',
         reference: materiel.reference || '',
-        type_materiel: materiel.type_materiel || '',
         etat: materiel.etat || '',
+        type_materiel: materiel.type_materiel || '',
         date_achat: materiel.date_achat || '',
-        quantite_total: materiel.quantite_total?.toString() || '',
+        date_commande_fournisseur: materiel.date_commande_fournisseur || '',
+        nom_fournisseur: materiel.nom_fournisseur || '',
+        quantite_total: materiel.quantite_total || 1,
+        os: materiel.os || '',
+        commentaire: materiel.commentaire || '',
+        is_obsolete: materiel.is_obsolete || false,
       });
 
-      // Initialiser la date sélectionnée
+      // Initialiser les dates sélectionnées
       if (materiel.date_achat) {
         setSelectedAchatDate(new Date(materiel.date_achat));
+      }
+      if (materiel.date_commande_fournisseur) {
+        setSelectedCommandeDate(new Date(materiel.date_commande_fournisseur));
       }
     }
   }, [materiel]);
@@ -124,14 +158,8 @@ export default function MaterielEditScreen() {
     if (!materiel || !token) return;
 
     // Validation simple
-    if (!formData.nom.trim() || !formData.reference.trim() || !formData.type_materiel.trim()) {
-      Alert.alert("Erreur", "Le nom, la référence et le type sont obligatoires");
-      return;
-    }
-
-    const quantite = parseInt(formData.quantite_total);
-    if (isNaN(quantite) || quantite < 0) {
-      Alert.alert("Erreur", "La quantité doit être un nombre positif");
+    if (!formData.nom.trim() || !formData.type_materiel.trim()) {
+      Alert.alert("Erreur", "Le nom et le type de matériel sont obligatoires");
       return;
     }
 
@@ -141,15 +169,20 @@ export default function MaterielEditScreen() {
       // Préparer les données pour l'API
       const updateData = {
         nom: formData.nom.trim(),
-        reference: formData.reference.trim(),
+        reference: formData.reference.trim() || null,
+        etat: formData.etat.trim() || null,
         type_materiel: formData.type_materiel.trim(),
-        etat: formData.etat.trim(),
-        date_achat: formatDateForAPI(formData.date_achat) || undefined,
-        quantite_total: quantite,
-      };
+        date_achat: formatDateForAPI(formData.date_achat),
+        date_commande_fournisseur: formatDateForAPI(formData.date_commande_fournisseur),
+        nom_fournisseur: formData.nom_fournisseur.trim() || null,
+        quantite_total: formData.quantite_total,
+        os: formData.os.trim() || null,
+        commentaire: formData.commentaire.trim() || null,
+        is_obsolete: formData.is_obsolete,
+      } as any;
 
       console.log('Données envoyées à l\'API:', updateData);
-
+      
       await materielsApi.updateMateriel(materiel.id, updateData, token);
       
       Alert.alert(
@@ -163,8 +196,8 @@ export default function MaterielEditScreen() {
         ]
       );
     } catch (err) {
-      console.error('Erreur lors de la sauvegarde:', err);
-      const message = err instanceof Error ? err.message : "Erreur lors de la sauvegarde";
+      console.error('Erreur lors de la mise à jour:', err);
+      const message = err instanceof Error ? err.message : "Erreur lors de la mise à jour";
       Alert.alert("Erreur", message);
     } finally {
       setSaving(false);
@@ -181,9 +214,27 @@ export default function MaterielEditScreen() {
         setTempSelectedAchatDate(selectedDate);
       } else {
         setSelectedAchatDate(selectedDate);
-      setFormData(prev => ({
-        ...prev,
+        setFormData(prev => ({
+          ...prev,
           date_achat: selectedDate.toISOString().split('T')[0]
+        }));
+      }
+    }
+  };
+
+  const handleCommandeDateChange = (event: any, selectedDate: Date | undefined) => {
+    if (Platform.OS === 'android') {
+      setShowCommandeDatePicker(false);
+    }
+
+    if (selectedDate) {
+      if (Platform.OS === 'ios') {
+        setTempSelectedCommandeDate(selectedDate);
+      } else {
+        setSelectedCommandeDate(selectedDate);
+        setFormData(prev => ({
+          ...prev,
+          date_commande_fournisseur: selectedDate.toISOString().split('T')[0]
         }));
       }
     }
@@ -198,10 +249,72 @@ export default function MaterielEditScreen() {
     setShowAchatDatePicker(false);
   };
 
+  const handleConfirmCommandeDate = () => {
+    setSelectedCommandeDate(tempSelectedCommandeDate);
+    setFormData(prev => ({
+      ...prev,
+      date_commande_fournisseur: tempSelectedCommandeDate.toISOString().split('T')[0]
+    }));
+    setShowCommandeDatePicker(false);
+  };
+
   const handleCancelAchatDate = () => {
     setTempSelectedAchatDate(selectedAchatDate);
     setShowAchatDatePicker(false);
   };
+
+  const handleCancelCommandeDate = () => {
+    setTempSelectedCommandeDate(selectedCommandeDate);
+    setShowCommandeDatePicker(false);
+  };
+
+  const showPicker = (title: string, options: any[], currentValue: any, onSelect: (value: any) => void) => {
+    Alert.alert(
+      title,
+      'Sélectionnez une option',
+      [
+        {
+          text: 'Annuler',
+          style: 'cancel',
+        },
+        ...options.map(option => ({
+          text: option.label,
+          onPress: () => onSelect(option.value)
+        }))
+      ]
+    );
+  };
+
+  const updateFormField = (field: keyof typeof formData, value: any) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+  };
+
+  const renderNumberInput = (label: string, field: keyof typeof formData, placeholder: string) => (
+    <View style={styles.inputGroup}>
+      <Caption style={styles.label}>{label}</Caption>
+      <TextInput
+        style={styles.numberInput}
+        value={formData[field].toString()}
+        onChangeText={(value) => updateFormField(field, parseInt(value) || 0)}
+        placeholder={placeholder}
+        keyboardType="numeric"
+      />
+    </View>
+  );
+
+  const renderPicker = (label: string, field: keyof typeof formData, options: any[], currentValue: any) => (
+    <View style={styles.inputGroup}>
+      <Caption style={styles.label}>{label}</Caption>
+      <Pressable
+        style={styles.pickerButton}
+        onPress={() => showPicker(label, options, currentValue, (value) => updateFormField(field, value))}
+      >
+        <BodyText style={styles.pickerText}>
+          {options.find(opt => opt.value === currentValue)?.label || 'Sélectionner une option'}
+        </BodyText>
+      </Pressable>
+    </View>
+  );
 
   if (loading) {
     return (
@@ -216,10 +329,10 @@ export default function MaterielEditScreen() {
     return (
       <View style={styles.errorContainer}>
         <BodyText style={styles.errorText}>
-          {error || 'Matériel non trouvé'}
+          {error || "Matériel non trouvé"}
         </BodyText>
         <Pressable style={styles.button} onPress={handleGoBack}>
-          <BodyText style={styles.buttonText}>Retour aux matériels</BodyText>
+          <BodyText style={styles.buttonText}>Retour</BodyText>
         </Pressable>
       </View>
     );
@@ -232,7 +345,7 @@ export default function MaterielEditScreen() {
         <Pressable onPress={handleGoBack} style={styles.backButton}>
           <ArrowLeft size={24} color="#374151" />
         </Pressable>
-        <Heading2 style={styles.headerTitle}>Modifier le matériel</Heading2>
+        <Heading2 style={styles.headerTitle}>Modifier matériel</Heading2>
         <Pressable onPress={handleSave} style={styles.saveButton} disabled={saving}>
           {saving ? (
             <ActivityIndicator size="small" color="#fff" />
@@ -240,7 +353,7 @@ export default function MaterielEditScreen() {
             <Save size={20} color="#fff" />
           )}
         </Pressable>
-            </View>
+      </View>
 
       <KeyboardAvoidingView 
         style={styles.keyboardAvoidingView}
@@ -251,144 +364,142 @@ export default function MaterielEditScreen() {
           <View style={styles.section}>
             <Heading2 style={styles.sectionTitle}>Informations du matériel</Heading2>
             
-            {/* Nom */}
-        <View style={styles.inputGroup}>
-              <Caption style={styles.label}>Nom *</Caption>
-              <View style={styles.inputContainer}>
-                <Package size={20} color="#6b7280" />
-          <TextInput
-            style={styles.textInput}
-            value={formData.nom}
-            onChangeText={(text) => setFormData(prev => ({ ...prev, nom: text }))}
-                  placeholder="Saisir le nom"
-            placeholderTextColor="#9ca3af"
-          />
+            {/* Client (lecture seule) */}
+            <View style={styles.inputGroup}>
+              <Caption style={styles.label}>Client</Caption>
+              <View style={[styles.pickerButton, styles.readOnlyField]}>
+                <BodyText style={styles.pickerText}>
+                  {materiel.client?.nom || 'Client non trouvé'}
+                </BodyText>
               </View>
-        </View>
+            </View>
 
-        {/* Référence */}
-        <View style={styles.inputGroup}>
-              <Caption style={styles.label}>Référence *</Caption>
-              <View style={styles.inputContainer}>
-                <Package size={20} color="#6b7280" />
-          <TextInput
-            style={styles.textInput}
-            value={formData.reference}
-            onChangeText={(text) => setFormData(prev => ({ ...prev, reference: text }))}
-                  placeholder="Saisir la référence"
-            placeholderTextColor="#9ca3af"
-          />
-              </View>
-        </View>
+            {/* Nom du matériel */}
+            <View style={styles.inputGroup}>
+              <Caption style={styles.label}>Nom du matériel *</Caption>
+              <TextInput
+                style={styles.textInput}
+                value={formData.nom}
+                onChangeText={(value) => updateFormField('nom', value)}
+                placeholder="Nom du matériel"
+                autoCapitalize="words"
+              />
+            </View>
+
+            {/* Référence */}
+            <View style={styles.inputGroup}>
+              <Caption style={styles.label}>Référence</Caption>
+              <TextInput
+                style={styles.textInput}
+                value={formData.reference}
+                onChangeText={(value) => updateFormField('reference', value)}
+                placeholder="Référence du matériel"
+                autoCapitalize="characters"
+              />
+            </View>
 
             {/* Type de matériel */}
-        <View style={styles.inputGroup}>
-              <Caption style={styles.label}>Type de matériel *</Caption>
-              <View style={styles.pickerContainer}>
-                <Pressable
-                  style={styles.pickerButton}
-                  onPress={() => {
-                    Alert.alert(
-                      'Type de matériel',
-                      'Sélectionnez le type de matériel',
-                      typeMaterielOptions.map(option => ({
-                        text: option,
-                        onPress: () => setFormData(prev => ({ ...prev, type_materiel: option }))
-                      }))
-                    );
-                  }}
-                >
-                  <BodyText style={styles.pickerText}>
-                    {formData.type_materiel || 'Sélectionner un type'}
-                  </BodyText>
-                </Pressable>
-              </View>
-        </View>
+            {renderPicker('Type de matériel *', 'type_materiel', typeMaterielOptions, formData.type_materiel)}
 
             {/* État */}
-        <View style={styles.inputGroup}>
-              <Caption style={styles.label}>État</Caption>
-              <View style={styles.pickerContainer}>
-                <Pressable
-                  style={styles.pickerButton}
-                  onPress={() => {
-                    Alert.alert(
-                      'État',
-                      'Sélectionnez l\'état du matériel',
-                      [
-                        {
-                          text: 'Annuler',
-                          style: 'cancel',
-                        },
-                        ...etatOptions.map(option => ({
-                          text: option,
-                          onPress: () => setFormData(prev => ({ ...prev, etat: option }))
-                        })),
-                        {
-                          text: 'Effacer',
-                          style: 'destructive',
-                          onPress: () => setFormData(prev => ({ ...prev, etat: '' }))
-                        }
-                      ]
-                    );
-                  }}
-                >
-                  <BodyText style={styles.pickerText}>
-                    {formData.etat || 'Sélectionner un état'}
-                  </BodyText>
-                </Pressable>
-              </View>
-        </View>
+            {renderPicker('État', 'etat', etatOptions, formData.etat)}
 
-        {/* Date d'achat */}
-        <View style={styles.inputGroup}>
-              <Caption style={styles.label}>Date d'achat</Caption>
-          <Pressable
-            style={styles.dateButton}
+            {/* Quantité totale */}
+            {renderNumberInput('Quantité totale *', 'quantite_total', '1')}
+          </View>
+
+          {/* Dates et fournisseur */}
+          <View style={styles.section}>
+            <Heading2 style={styles.sectionTitle}>Dates et fournisseur</Heading2>
+            
+            {/* Date d'achat */}
+            <View style={styles.inputGroup}>
+              <Caption style={styles.label}>Date d&apos;achat *</Caption>
+              <Pressable
+                style={styles.dateButton}
                 onPress={() => {
                   setTempSelectedAchatDate(selectedAchatDate);
                   setShowAchatDatePicker(true);
                 }}
-          >
-            <Calendar size={20} color="#6b7280" />
+              >
+                <Calendar size={20} color="#6b7280" />
                 <BodyText style={styles.dateText}>
                   {formData.date_achat ? formatDateForDisplay(formData.date_achat) : 'Sélectionner une date'}
-            </BodyText>
-          </Pressable>
-        </View>
+                </BodyText>
+              </Pressable>
+            </View>
 
-            {/* Quantité totale */}
+            {/* Date commande fournisseur */}
             <View style={styles.inputGroup}>
-              <Caption style={styles.label}>Quantité totale</Caption>
-              <View style={styles.inputContainer}>
-                <Package size={20} color="#6b7280" />
-                <TextInput
-                  style={styles.textInput}
-                  value={formData.quantite_total}
-                  onChangeText={(text) => setFormData(prev => ({ ...prev, quantite_total: text }))}
-                  placeholder="0"
-                  placeholderTextColor="#9ca3af"
-                  keyboardType="numeric"
-                />
-              </View>
+              <Caption style={styles.label}>Date commande fournisseur</Caption>
+              <Pressable
+                style={styles.dateButton}
+                onPress={() => {
+                  setTempSelectedCommandeDate(selectedCommandeDate);
+                  setShowCommandeDatePicker(true);
+                }}
+              >
+                <Calendar size={20} color="#6b7280" />
+                <BodyText style={styles.dateText}>
+                  {formData.date_commande_fournisseur ? formatDateForDisplay(formData.date_commande_fournisseur) : 'Sélectionner une date'}
+                </BodyText>
+              </Pressable>
+            </View>
+
+            {/* Nom du fournisseur */}
+            <View style={styles.inputGroup}>
+              <Caption style={styles.label}>Nom du fournisseur</Caption>
+              <TextInput
+                style={styles.textInput}
+                value={formData.nom_fournisseur}
+                onChangeText={(value) => updateFormField('nom_fournisseur', value)}
+                placeholder="Nom du fournisseur"
+                autoCapitalize="words"
+              />
             </View>
           </View>
 
-          {/* Informations du client (lecture seule) */}
-          {materiel.client && (
-            <View style={styles.section}>
-              <Heading2 style={styles.sectionTitle}>Client</Heading2>
-              <View style={styles.clientInfo}>
-                <BodyText style={styles.clientName}>{materiel.client.nom}</BodyText>
-                <BodyText style={styles.clientEmail}>{materiel.client.email}</BodyText>
-                <BodyText style={styles.clientPhone}>{materiel.client.telephone}</BodyText>
+          {/* Système et statut */}
+          <View style={styles.section}>
+            <Heading2 style={styles.sectionTitle}>Système et statut</Heading2>
+            
+            {/* Système d'exploitation */}
+            {renderPicker('Système d\'exploitation', 'os', osOptions, formData.os)}
+
+            {/* Matériel obsolète */}
+            <View style={styles.inputGroup}>
+              <Caption style={styles.label}>Matériel obsolète</Caption>
+              <View style={styles.switchContainer}>
+                <Switch
+                  value={formData.is_obsolete}
+                  onValueChange={(value) => updateFormField('is_obsolete', value)}
+                  trackColor={{ false: '#d1d5db', true: '#2563eb' }}
+                  thumbColor={formData.is_obsolete ? '#fff' : '#f4f3f4'}
+                />
+                <BodyText style={styles.switchLabel}>
+                  {formData.is_obsolete ? 'Obsolète' : 'Actuel'}
+                </BodyText>
               </View>
             </View>
-          )}
+
+            {/* Commentaire */}
+            <View style={styles.inputGroup}>
+              <Caption style={styles.label}>Commentaire</Caption>
+              <TextInput
+                style={[styles.textInput, styles.textArea]}
+                value={formData.commentaire}
+                onChangeText={(value) => updateFormField('commentaire', value)}
+                placeholder="Ajoutez un commentaire sur ce matériel..."
+                multiline={true}
+                numberOfLines={4}
+                textAlignVertical="top"
+              />
+            </View>
+          </View>
 
           {/* Espace en bas */}
           <View style={{ height: 120 }} />
-      </ScrollView>
+        </ScrollView>
       </KeyboardAvoidingView>
 
       {/* Modal pour le sélecteur de date d'achat */}
@@ -402,25 +513,25 @@ export default function MaterielEditScreen() {
           <View style={styles.modalOverlay}>
             <View style={styles.modalContent}>
               <View style={styles.modalHeader}>
-                <Pressable
+                <Pressable 
                   onPress={handleCancelAchatDate}
                   style={styles.modalButtonContainer}
                 >
                   <BodyText style={styles.modalButton}>Annuler</BodyText>
                 </Pressable>
                 <BodyText style={styles.modalTitle}>Sélectionner une date d&apos;achat</BodyText>
-                <Pressable
+                <Pressable 
                   onPress={handleConfirmAchatDate}
                   style={styles.modalButtonContainer}
                 >
                   <BodyText style={styles.modalButton}>Terminé</BodyText>
                 </Pressable>
-              </View>
+              </View> 
               <View style={{ padding: 20, backgroundColor: 'white' }}>
-              <DateTimePicker
+                <DateTimePicker
                   value={tempSelectedAchatDate}
                   mode="date"
-                display="spinner"
+                  display="spinner"
                   onChange={handleAchatDateChange}
                   maximumDate={new Date(2100, 11, 31)}
                   minimumDate={new Date(1900, 0, 1)}
@@ -433,14 +544,67 @@ export default function MaterielEditScreen() {
         </Modal>
       ) : (
         showAchatDatePicker && (
-        <DateTimePicker
+          <DateTimePicker
             value={selectedAchatDate}
             mode="date"
-          display="default"
+            display="default"
             onChange={handleAchatDateChange}
             maximumDate={new Date(2100, 11, 31)}
             minimumDate={new Date(1900, 0, 1)}
-        />
+          />
+        )
+      )}
+
+      {/* Modal pour le sélecteur de date de commande */}
+      {Platform.OS === 'ios' ? (
+        <Modal
+          animationType="fade"
+          transparent={true}
+          visible={showCommandeDatePicker}
+          onRequestClose={() => setShowCommandeDatePicker(false)}
+        >
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalContent}>
+              <View style={styles.modalHeader}>
+                <Pressable 
+                  onPress={handleCancelCommandeDate}
+                  style={styles.modalButtonContainer}
+                >
+                  <BodyText style={styles.modalButton}>Annuler</BodyText>
+                </Pressable>
+                <BodyText style={styles.modalTitle}>Sélectionner une date de commande</BodyText>
+                <Pressable 
+                  onPress={handleConfirmCommandeDate}
+                  style={styles.modalButtonContainer}
+                >
+                  <BodyText style={styles.modalButton}>Terminé</BodyText>
+                </Pressable>
+              </View> 
+              <View style={{ padding: 20, backgroundColor: 'white' }}>
+                <DateTimePicker
+                  value={tempSelectedCommandeDate}
+                  mode="date"
+                  display="spinner"
+                  onChange={handleCommandeDateChange}
+                  maximumDate={new Date(2100, 11, 31)}
+                  minimumDate={new Date(1900, 0, 1)}
+                  themeVariant="light"
+                  textColor="#000"  
+                />
+              </View>
+            </View>
+          </View>
+        </Modal>
+      ) : (
+        showCommandeDatePicker && (
+          <DateTimePicker
+            value={selectedCommandeDate}
+            mode="date"
+            display="default"
+            onChange={handleCommandeDateChange}
+            maximumDate={new Date(2100, 11, 31)}
+            minimumDate={new Date(1900, 0, 1)}
+          />
         )
       )}
 
@@ -503,35 +667,16 @@ const styles = StyleSheet.create({
     marginBottom: 8,
     fontWeight: "500",
   },
-  inputContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    padding: 12,
-    borderWidth: 1,
-    borderColor: "#d1d5db",
-    borderRadius: 8,
-    backgroundColor: "#fff",
-    gap: 12,
-  },
-  inputText: {
-    color: "#374151",
-    fontSize: 16,
-    flex: 1,
-  },
-  textInput: {
-    color: "#374151",
-    fontSize: 16,
-    flex: 1,
-    padding: 0,
-  },
-  pickerContainer: {
-    borderWidth: 1,
-    borderColor: "#d1d5db",
-    borderRadius: 8,
-    backgroundColor: "#fff",
-  },
   pickerButton: {
     padding: 12,
+    borderWidth: 1,
+    borderColor: "#d1d5db",
+    borderRadius: 8,
+    backgroundColor: "#fff",
+  },
+  readOnlyField: {
+    backgroundColor: "#f9fafb",
+    borderColor: "#e5e7eb",
   },
   pickerText: {
     color: "#374151",
@@ -551,27 +696,39 @@ const styles = StyleSheet.create({
     color: "#374151",
     fontSize: 16,
   },
-  clientInfo: {
-    backgroundColor: "#f9fafb",
-    padding: 16,
-    borderRadius: 8,
+  textInput: {
     borderWidth: 1,
-    borderColor: "#e5e7eb",
-  },
-  clientName: {
-    color: "#1f2937",
+    borderColor: "#d1d5db",
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 12,
     fontSize: 16,
-    fontWeight: "600",
-    marginBottom: 4,
+    color: "#1f2937",
+    backgroundColor: "#fff",
   },
-  clientEmail: {
-    color: "#6b7280",
-    fontSize: 14,
-    marginBottom: 2,
+  numberInput: {
+    borderWidth: 1,
+    borderColor: "#d1d5db",
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 12,
+    fontSize: 16,
+    color: "#1f2937",
+    backgroundColor: "#fff",
   },
-  clientPhone: {
-    color: "#6b7280",
-    fontSize: 14,
+  textArea: {
+    height: 100,
+    textAlignVertical: 'top',
+  },
+  switchContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    paddingVertical: 8,
+  },
+  switchLabel: {
+    color: "#374151",
+    fontSize: 16,
   },
   loadingContainer: {
     flex: 1,

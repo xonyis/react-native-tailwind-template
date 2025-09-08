@@ -9,16 +9,16 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import { ArrowLeft, Save, X } from "lucide-react-native";
 import React, { useEffect, useState } from "react";
 import {
-  ActivityIndicator,
-  Alert,
-  KeyboardAvoidingView,
-  Modal,
-  Platform,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  TextInput,
-  View,
+    ActivityIndicator,
+    Alert,
+    KeyboardAvoidingView,
+    Modal,
+    Platform,
+    Pressable,
+    ScrollView,
+    StyleSheet,
+    TextInput,
+    View,
 } from "react-native";
 
 export default function ClientEditScreen() {
@@ -35,22 +35,23 @@ export default function ClientEditScreen() {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [tempSelectedDate, setTempSelectedDate] = useState(new Date());
   const [showTypePicker, setShowTypePicker] = useState(false);
+  const [showCountryPicker, setShowCountryPicker] = useState(false);
   
   // États pour les champs du formulaire
   const [formData, setFormData] = useState({
     nom: '',
-    email: '',
-    telephone: '',
+    adresseEmail1: '',
+    adresseEmail2: '',
     adresseClient: '',
     ville: '',
     codePostal: '',
-    raisonSocial: '',
+    pays: '',
     numeroTel1: '',
     numeroTel2: '',
-    siret: '',
     typeClient: '',
     referenceClient: '',
     visiteAnnuelle: '',
+    commentaire: '',
   });
 
   useEffect(() => {
@@ -70,18 +71,18 @@ export default function ClientEditScreen() {
         // Initialiser le formulaire avec les données du client
         setFormData({
           nom: clientData.nom || '',
-          email: clientData.email || '',
-          telephone: clientData.telephone || '',
+          adresseEmail1: clientData.adresseEmail1 || '',
+          adresseEmail2: clientData.adresseEmail2 || '',
           adresseClient: clientData.adresseClient || '',
           ville: clientData.ville || '',
           codePostal: clientData.codePostal || '',
-          raisonSocial: clientData.raisonSocial || '',
+          pays: clientData.pays || '',
           numeroTel1: clientData.numeroTel1 || '',
           numeroTel2: clientData.numeroTel2 || '',
-          siret: clientData.siret || '',
           typeClient: clientData.typeClient || '',
           referenceClient: clientData.referenceClient || '',
           visiteAnnuelle: clientData.visiteAnnuelle || '',
+          commentaire: clientData.commentaire || '',
         });
 
         // Initialiser la date sélectionnée si elle existe
@@ -119,8 +120,34 @@ export default function ClientEditScreen() {
     if (!client || !token) return;
 
     // Validation simple
-    if (!formData.nom.trim() || !formData.email.trim()) {
-      Alert.alert("Erreur", "Le nom et l'email sont obligatoires");
+    if (!formData.nom.trim()) {
+      Alert.alert("Erreur", "Le nom est obligatoire");
+      return;
+    }
+
+    // Validation email si fourni
+    if (formData.adresseEmail1 && !isValidEmail(formData.adresseEmail1)) {
+      Alert.alert("Erreur", "L'adresse email 1 n'est pas valide");
+      return;
+    }
+    if (formData.adresseEmail2 && !isValidEmail(formData.adresseEmail2)) {
+      Alert.alert("Erreur", "L'adresse email 2 n'est pas valide");
+      return;
+    }
+
+    // Validation téléphone si fourni
+    if (formData.numeroTel1 && !isValidPhone(formData.numeroTel1)) {
+      Alert.alert("Erreur", "Le numéro de téléphone 1 n'est pas valide");
+      return;
+    }
+    if (formData.numeroTel2 && !isValidPhone(formData.numeroTel2)) {
+      Alert.alert("Erreur", "Le numéro de téléphone 2 n'est pas valide");
+      return;
+    }
+
+    // Validation code postal si fourni
+    if (formData.codePostal && !isValidPostalCode(formData.codePostal)) {
+      Alert.alert("Erreur", "Le code postal n'est pas valide");
       return;
     }
 
@@ -130,17 +157,18 @@ export default function ClientEditScreen() {
       // Préparer les données pour l'API
       const updateData: Partial<Client> = {
         nom: formData.nom.trim(),
-        email: formData.email.trim(),
-        telephone: formData.telephone.trim() || '',
-        adresseClient: formData.adresseClient.trim() || '',
-        ville: formData.ville.trim() || '',
-        codePostal: formData.codePostal.trim() || '',
-        raisonSocial: formData.raisonSocial.trim() || null,
+        adresseEmail1: formData.adresseEmail1.trim() || null,
+        adresseEmail2: formData.adresseEmail2.trim() || null,
+        adresseClient: formData.adresseClient.trim() || null,
+        ville: formData.ville.trim() || null,
+        codePostal: formData.codePostal.trim() || null,
+        pays: formData.pays.trim() || null,
+        numeroTel1: formData.numeroTel1.trim() || null,
         numeroTel2: formData.numeroTel2.trim() || null,
-        siret: formData.siret.trim() || null,
         referenceClient: formData.referenceClient.trim() || null,
         typeClient: null, // Initialiser à null par défaut
         visiteAnnuelle: null, // Initialiser à null par défaut
+        commentaire: formData.commentaire.trim() || null,
       };
 
       // Gestion spéciale pour visiteAnnuelle
@@ -284,6 +312,31 @@ export default function ClientEditScreen() {
     setShowTypePicker(false);
   };
 
+  const showCountryPickerModal = () => {
+    setShowCountryPicker(true);
+  };
+
+  const handleCountryChange = (value: string) => {
+    updateFormField('pays', value);
+    setShowCountryPicker(false);
+  };
+
+  // Fonctions de validation
+  const isValidEmail = (email: string): boolean => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
+
+  const isValidPhone = (phone: string): boolean => {
+    const phoneRegex = /^\+?[0-9\s\-().]{7,20}$/;
+    return phoneRegex.test(phone);
+  };
+
+  const isValidPostalCode = (postalCode: string): boolean => {
+    const postalRegex = /^[A-Z0-9\- ]{3,10}$/i;
+    return postalRegex.test(postalCode);
+  };
+
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
@@ -346,11 +399,11 @@ export default function ClientEditScreen() {
             </View>
 
             <View style={styles.inputGroup}>
-              <BodyText style={styles.label}>Email *</BodyText>
+              <BodyText style={styles.label}>Adresse email 1</BodyText>
               <TextInput
                 style={styles.input}
-                value={formData.email}
-                onChangeText={(value) => updateFormField('email', value)}
+                value={formData.adresseEmail1}
+                onChangeText={(value) => updateFormField('adresseEmail1', value)}
                 placeholder="email@exemple.com"
                 keyboardType="email-address"
                 autoCapitalize="none"
@@ -359,13 +412,15 @@ export default function ClientEditScreen() {
             </View>
 
             <View style={styles.inputGroup}>
-              <BodyText style={styles.label}>Téléphone</BodyText>
+              <BodyText style={styles.label}>Adresse email 2</BodyText>
               <TextInput
                 style={styles.input}
-                value={formData.telephone}
-                onChangeText={(value) => updateFormField('telephone', value)}
-                placeholder="0123456789"
-                keyboardType="phone-pad"
+                value={formData.adresseEmail2}
+                onChangeText={(value) => updateFormField('adresseEmail2', value)}
+                placeholder="email2@exemple.com"
+                keyboardType="email-address"
+                autoCapitalize="none"
+                autoCorrect={false}
               />
             </View>
           </View>
@@ -393,8 +448,8 @@ export default function ClientEditScreen() {
                   value={formData.codePostal}
                   onChangeText={(value) => updateFormField('codePostal', value)}
                   placeholder="75001"
-                  keyboardType="number-pad"
-                  maxLength={5}
+                  autoCapitalize="characters"
+                  maxLength={10}
                 />
               </View>
               
@@ -409,6 +464,15 @@ export default function ClientEditScreen() {
                 />
               </View>
             </View>
+
+            <View style={styles.inputGroup}>
+              <BodyText style={styles.label}>Pays</BodyText>
+              <Pressable style={styles.input} onPress={showCountryPickerModal}>
+                <BodyText style={formData.pays ? styles.dateText : styles.placeholderText}>
+                  {formData.pays || "Sélectionner un pays"}
+                </BodyText>
+              </Pressable>
+            </View>
           </View>
 
           {/* Téléphones additionnels */}
@@ -416,62 +480,39 @@ export default function ClientEditScreen() {
             <Caption style={styles.sectionTitle}>CONTACTS ADDITIONNELS</Caption>
             
             <View style={styles.inputGroup}>
-              <BodyText style={styles.label}>Téléphone 1</BodyText>
+              <BodyText style={styles.label}>Numéro de téléphone 1</BodyText>
               <TextInput
                 style={styles.input}
                 value={formData.numeroTel1}
                 onChangeText={(value) => updateFormField('numeroTel1', value)}
-                placeholder="0123456789"
+                placeholder="+33 1 23 45 67 89"
                 keyboardType="phone-pad"
               />
             </View>
 
             <View style={styles.inputGroup}>
-              <BodyText style={styles.label}>Téléphone 2</BodyText>
+              <BodyText style={styles.label}>Numéro de téléphone 2</BodyText>
               <TextInput
                 style={styles.input}
                 value={formData.numeroTel2}
                 onChangeText={(value) => updateFormField('numeroTel2', value)}
-                placeholder="0123456789"
+                placeholder="+33 1 23 45 67 89"
                 keyboardType="phone-pad"
               />
             </View>
           </View>
 
-          {/* Informations entreprise */}
+          {/* Informations client */}
           <View style={styles.section}>
-            <Caption style={styles.sectionTitle}>ENTREPRISE</Caption>
+            <Caption style={styles.sectionTitle}>INFORMATIONS CLIENT</Caption>
             
-            <View style={styles.inputGroup}>
-              <BodyText style={styles.label}>Raison sociale</BodyText>
-              <TextInput
-                style={styles.input}
-                value={formData.raisonSocial}
-                onChangeText={(value) => updateFormField('raisonSocial', value)}
-                placeholder="Ma Société SARL"
-                autoCapitalize="words"
-              />
-            </View>
-
-            <View style={styles.inputGroup}>
-              <BodyText style={styles.label}>SIRET</BodyText>
-              <TextInput
-                style={styles.input}
-                value={formData.siret}
-                onChangeText={(value) => updateFormField('siret', value)}
-                placeholder="12345678901234"
-                keyboardType="number-pad"
-                maxLength={14}
-              />
-            </View>
-
             <View style={styles.inputGroup}>
               <BodyText style={styles.label}>Référence client</BodyText>
               <TextInput
                 style={styles.input}
                 value={formData.referenceClient}
                 onChangeText={(value) => updateFormField('referenceClient', value)}
-                placeholder="REF123456"
+                placeholder="CUXXXX-XXXXX"
                 autoCapitalize="characters"
               />
             </View>
@@ -486,7 +527,7 @@ export default function ClientEditScreen() {
             </View>
 
             <View style={styles.inputGroup}>
-              <BodyText style={styles.label}>Visite annuelle</BodyText>
+              <BodyText style={styles.label}>Date de la prochaine visite annuelle</BodyText>
               <View style={styles.dateInputContainer}>
                 <Pressable style={styles.dateInput} onPress={showDatePickerModal}>
                   <BodyText style={formData.visiteAnnuelle ? styles.dateText : styles.placeholderText}>
@@ -499,6 +540,19 @@ export default function ClientEditScreen() {
                   </Pressable>
                 )}
               </View>
+            </View>
+
+            <View style={styles.inputGroup}>
+              <BodyText style={styles.label}>Commentaire</BodyText>
+              <TextInput
+                style={[styles.input, styles.textArea]}
+                value={formData.commentaire}
+                onChangeText={(value) => updateFormField('commentaire', value)}
+                placeholder="Ajoutez un commentaire sur ce client..."
+                multiline={true}
+                numberOfLines={4}
+                textAlignVertical="top"
+              />
             </View>
           </View>
 
@@ -600,13 +654,98 @@ export default function ClientEditScreen() {
               </Pressable>
               <Pressable 
                 style={styles.typeOption}
-                onPress={() => handleTypeChange('Maintenance')}
+                onPress={() => handleTypeChange('maintenance')}
               >
                 <BodyText style={[
                   styles.typeOptionText,
-                  formData.typeClient === 'Maintenance' && styles.typeOptionSelected
+                  formData.typeClient === 'maintenance' && styles.typeOptionSelected
                 ]}>
                   Maintenance
+                </BodyText>
+              </Pressable>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Modal pour le sélecteur de pays */}
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={showCountryPicker}
+        onRequestClose={() => setShowCountryPicker(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <Pressable 
+                onPress={() => setShowCountryPicker(false)}
+                style={styles.modalButtonContainer}
+              >
+                <BodyText style={styles.modalButton}>Annuler</BodyText>
+              </Pressable>
+              <BodyText style={styles.modalTitle}>Sélectionner un pays</BodyText>
+              <Pressable 
+                onPress={() => setShowCountryPicker(false)}
+                style={styles.modalButtonContainer}
+              >
+                <BodyText style={styles.modalButton}>Terminé</BodyText>
+              </Pressable>
+            </View>
+            <View style={{ padding: 20, backgroundColor: 'white' }}>
+              <Pressable 
+                style={styles.typeOption}
+                onPress={() => handleCountryChange('')}
+              >
+                <BodyText style={[
+                  styles.typeOptionText,
+                  !formData.pays && styles.typeOptionSelected
+                ]}>
+                  Aucun pays
+                </BodyText>
+              </Pressable>
+              <Pressable 
+                style={styles.typeOption}
+                onPress={() => handleCountryChange('France')}
+              >
+                <BodyText style={[
+                  styles.typeOptionText,
+                  formData.pays === 'France' && styles.typeOptionSelected
+                ]}>
+                  France
+                </BodyText>
+              </Pressable>
+              <Pressable 
+                style={styles.typeOption}
+                onPress={() => handleCountryChange('Luxembourg')}
+              >
+                <BodyText style={[
+                  styles.typeOptionText,
+                  formData.pays === 'Luxembourg' && styles.typeOptionSelected
+                ]}>
+                  Luxembourg
+                </BodyText>
+              </Pressable>
+              <Pressable 
+                style={styles.typeOption}
+                onPress={() => handleCountryChange('Belgique')}
+              >
+                <BodyText style={[
+                  styles.typeOptionText,
+                  formData.pays === 'Belgique' && styles.typeOptionSelected
+                ]}>
+                  Belgique
+                </BodyText>
+              </Pressable>
+              <Pressable 
+                style={styles.typeOption}
+                onPress={() => handleCountryChange('Autre')}
+              >
+                <BodyText style={[
+                  styles.typeOptionText,
+                  formData.pays === 'Autre' && styles.typeOptionSelected
+                ]}>
+                  Autre
                 </BodyText>
               </Pressable>
             </View>
@@ -807,5 +946,9 @@ const styles = StyleSheet.create({
     padding: 8,
     borderRadius: 4,
     backgroundColor: '#f3f4f6',
+  },
+  textArea: {
+    height: 100,
+    textAlignVertical: 'top',
   },
 });
